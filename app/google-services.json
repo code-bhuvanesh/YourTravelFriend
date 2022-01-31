@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "206577416137",
+    "project_id": "easytransport-142e3",
+    "storage_bucket": "easytransport-142e3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:206577416137:android:8f4381deb459d6360c5a18",
+        "android_client_info": {
+          "package_name": "com.example.your_travel_friend"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "206577416137-gqb4nhvuausgo9j2n49gc2kj65c9ka35.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.your_travel_friend",
+            "certificate_hash": "a938e3cadd734c1431b0886eade5e3798ff9b9df"
+          }
+        },
+        {
+          "client_id": "206577416137-n9r5g71uup3e9p73r9ur66tluleqpm7v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDONi5AstkU3Cf1MJITZ7wSiaQkBfYqeW4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "206577416137-n9r5g71uup3e9p73r9ur66tluleqpm7v.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
