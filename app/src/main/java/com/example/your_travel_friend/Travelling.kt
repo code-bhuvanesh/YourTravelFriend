@@ -9,7 +9,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.your_travel_friend.directionHelpers.TaskLoadedCallback
-import com.google.android.gms.location.*
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
@@ -20,7 +21,7 @@ import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
 
 
-class Travelling : AppCompatActivity(),OnMapReadyCallback,TaskLoadedCallback {
+class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
     private lateinit var mapView: MapView
 
     private lateinit var map: GoogleMap
@@ -76,11 +77,10 @@ class Travelling : AppCompatActivity(),OnMapReadyCallback,TaskLoadedCallback {
             .position(dest_latLng)
         destinationMarker.title("destination")
         map.addMarker(destinationMarker)
-
+        val url = getUrl(LatLng(origin_lat, orign_lng), dest_latLng, "driving")
         val resultDistance = FloatArray(10)
 
     }
-
 
 
     @SuppressLint("MissingPermission")
@@ -130,7 +130,7 @@ class Travelling : AppCompatActivity(),OnMapReadyCallback,TaskLoadedCallback {
         // Output format
         val output = "json"
         // Building the url to the web service
-        return "https://maps.googleapis.com/maps/api/directions/$output?$parameters&key=AIzaSyAww8OQL4bIEopVhE-U0lzfHVmGG169l38"
+        return "https://maps.googleapis.com/maps/api/directions/$output?$parameters&key=AIzaSyDkMQZjs8Hxxjt0uL8X0xoCHVi5UYscvVU"
     }
 
     override fun onTaskDone(vararg values: Any?) {

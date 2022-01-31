@@ -1,8 +1,8 @@
 package com.example.your_travel_friend
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : AppCompatActivity() {
@@ -17,12 +17,12 @@ class MainActivity : AppCompatActivity() {
 //        mAuth.signOut()
         val user = mAuth.currentUser
 
-        if(user != null){
-            val mapActivityIntent = Intent(this,SelectType::class.java)
+        if (user != null) {
+            val mapActivityIntent = Intent(this, SelectType::class.java)
             startActivity(mapActivityIntent)
             finish()
-        }else{
-            val signInIntent = Intent(this,SignInActivity::class.java)
+        } else {
+            val signInIntent = Intent(this, SignInActivity::class.java)
             startActivity(signInIntent)
             finish()
         }

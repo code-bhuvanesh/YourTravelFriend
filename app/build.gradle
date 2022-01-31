@@ -52,7 +52,8 @@ dependencies {
     //googleMaps
     implementation 'com.google.android.gms:play-services-maps:18.0.2'
     implementation 'com.google.android.gms:play-services-location:19.0.1'
-//    implementation 'com.google.android.gms:play-services-places:17.0.0'
+    implementation 'com.google.android.gms:play-services-places:17.0.0'
+    implementation 'com.google.maps.android:android-maps-utils:2.3.0'
     //firebase
     implementation 'com.google.firebase:firebase-auth-ktx:21.0.1'
     implementation 'com.google.android.gms:play-services-auth:20.0.1'

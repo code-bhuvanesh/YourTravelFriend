@@ -1,7 +1,7 @@
 package com.example.your_travel_friend
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 
 class SearchForVehicle : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

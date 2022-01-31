@@ -11,8 +11,11 @@ import android.location.LocationListener
 import android.os.Bundle
 import android.text.SpannableStringBuilder
 import android.util.Log
+import android.view.KeyEvent
+import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -24,12 +27,11 @@ import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ktx.database
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import java.io.IOException
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
@@ -76,32 +78,34 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
             == PackageManager.PERMISSION_GRANTED &&
             ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
             == PackageManager.PERMISSION_GRANTED
-        ){
+        ) {
             getCurrentLocation()
+            initSearchLocation()
         }
         val mLocationRequest = LocationRequest.create()
         mLocationRequest.interval = 60000
         mLocationRequest.fastestInterval = 5000
         mLocationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
 
-        LocationServices.getFusedLocationProviderClient(this).requestLocationUpdates(mLocationRequest, mLocationCallback, mainLooper)
+        LocationServices.getFusedLocationProviderClient(this)
+            .requestLocationUpdates(mLocationRequest, mLocationCallback, mainLooper)
 
-        setDestinationBtn.setOnClickListener{
+        setDestinationBtn.setOnClickListener {
             run {
 
-                if(code == 1){
+                if (code == 1) {
                     addDestinationToFirebase()
                     val travellingIntent = Intent(this, Travelling::class.java)
-                    travellingIntent.putExtra("destination",addressTextView.text)
-                    if(destinationLatitude != null && destinationLongitude != null){
+                    travellingIntent.putExtra("destination", addressTextView.text)
+                    if (destinationLatitude != null && destinationLongitude != null) {
                         travellingIntent.putExtra("latitude", destinationLatitude!!)
                         travellingIntent.putExtra("longitude", destinationLongitude!!)
                         startActivity(travellingIntent)
                     }
-                }else if(code == 2){
+                } else if (code == 2) {
                     val travellerIntent = Intent(this, Traveller::class.java)
-                    travellerIntent.putExtra("destination",addressTextView.text)
-                    if(destinationLatitude != null && destinationLongitude != null){
+                    travellerIntent.putExtra("destination", addressTextView.text)
+                    if (destinationLatitude != null && destinationLongitude != null) {
                         travellerIntent.putExtra("latitude", destinationLatitude!!)
                         travellerIntent.putExtra("longitude", destinationLongitude!!)
                         startActivity(travellerIntent)
@@ -110,6 +114,36 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
             }
         }
 
+    }
+
+    private fun initSearchLocation() {
+
+        addressTextView.setOnEditorActionListener { v, actionId, event ->
+            if(actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_SEARCH || event.action == KeyEvent.ACTION_DOWN || event.action == KeyEvent.KEYCODE_ENTER){
+                geoLocate()
+                true
+            } else {
+                false
+            }
+        }
+    }
+
+    private fun geoLocate() {
+        Log.d("geoLocating" ,"geolocate started")
+        val searchString = addressTextView.text.toString()
+            val geocoder = Geocoder(this)
+        var list = ArrayList<Address>()
+        try {
+            list = geocoder.getFromLocationName(searchString,1) as ArrayList<Address>
+        }catch (e: IOException){
+            Log.d("geoLocating","location for address cannot be find")
+            Toast.makeText(this,"can't find the searched location",Toast.LENGTH_SHORT).show()
+        }
+        if(list.size >0){
+            val geoLocateAddress = list.get(0)
+            moveCamera(LatLng(geoLocateAddress.latitude,geoLocateAddress.longitude),defaultZoom)
+
+        }
     }
 
     private val requestPermissionLauncher =
@@ -127,11 +161,12 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
 
             for (location in locationResult.locations) {
                 if (location != null) {
-                    Log.d("lastLocation","location recived")
+                    Log.d("lastLocation", "location recived")
                 }
             }
         }
     }
+
     private fun getLocationPermission() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
             != PackageManager.PERMISSION_GRANTED &&
@@ -165,8 +200,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
         try {
             val location = fusedLocationProviderClient!!.lastLocation
             Log.d("test_location", "current location result = $location")
-            location.addOnSuccessListener {
-                loc ->
+            location.addOnSuccessListener { loc ->
                 run {
                     try {
                         val currentLocation = loc
@@ -180,8 +214,11 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
                                 defaultZoom
                             )
                             val geocoder = Geocoder(this, Locale.getDefault())
-                            val addresses = geocoder.getFromLocation(origin_lat,origin_lng,1)
-                            origin_address = addresses[0].getAddressLine(0) + ", " + addresses[0].getAddressLine(1)
+                            val addresses = geocoder.getFromLocation(origin_lat, origin_lng, 1)
+                            origin_address =
+                                addresses[0].getAddressLine(0) + ", " + addresses[0].getAddressLine(
+                                    1
+                                )
                             fusedLocationProviderClient?.removeLocationUpdates(mLocationCallback)
                         } else {
                             getLocationPermission()
@@ -220,13 +257,14 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
     }
 
     private fun setAddress(address: Address) {
-        Log.d("set_address", "setAddress: address : ${address.toString()}")
+        Log.d("set_address", "setAddress: address : $address")
         if (address != null) {
             if (address.getAddressLine(0) != null) {
                 addressTextView.text = SpannableStringBuilder(address.getAddressLine(0))
             }
             if (address.getAddressLine(1) != null) {
-                addressTextView.text = SpannableStringBuilder("${addressTextView.text}, ${address.getAddressLine(1)}")
+                addressTextView.text =
+                    SpannableStringBuilder("${addressTextView.text}, ${address.getAddressLine(1)}")
             }
         }
     }
@@ -235,28 +273,28 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
     private var destinationLongitude: Double? = null
     override fun onCameraIdle() {
         Log.d("map_camera", "onCameraMove: camera idle")
-        var addresses:  List<Address>? = null
-        val geocoder = Geocoder(this,Locale.getDefault())
+        var addresses: List<Address>? = null
+        val geocoder = Geocoder(this, Locale.getDefault())
         destinationLatitude = map.cameraPosition.target.latitude
         destinationLongitude = map.cameraPosition.target.longitude
 
         try {
-            addresses = geocoder.getFromLocation(destinationLatitude!!,destinationLongitude!!,1)
+            addresses = geocoder.getFromLocation(destinationLatitude!!, destinationLongitude!!, 1)
             setAddress(addresses[0])
             Log.d("map_camera", "onCameraMove: sent address")
-        }catch (e: IndexOutOfBoundsException){
+        } catch (e: IndexOutOfBoundsException) {
             e.printStackTrace()
-        }catch (e: IOException){
+        } catch (e: IOException) {
             e.printStackTrace()
         }
     }
 
-    fun addDestinationToFirebase(){
+    fun addDestinationToFirebase() {
         val currentUserId = FirebaseAuth.getInstance().currentUser!!.uid
         val db = Firebase.database
         val ref = db.getReference("drivers").child(currentUserId)
 
-        val destinationData = hashMapOf<String,String>(
+        val destinationData = hashMapOf<String, String>(
             "originLat" to origin_lat.toString(),
             "originLng" to origin_lng.toString(),
             "destLat" to destinationLatitude.toString(),

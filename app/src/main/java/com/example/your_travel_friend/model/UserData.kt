@@ -19,4 +19,5 @@ class UserData(private val userId:String, private val userName: String, private 
             "passengerRating" to passengerRating.toString()
         )
     }
+
 }

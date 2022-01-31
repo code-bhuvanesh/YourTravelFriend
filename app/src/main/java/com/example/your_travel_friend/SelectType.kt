@@ -1,11 +1,8 @@
 package com.example.your_travel_friend
 
-import android.app.Activity
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 
 class SelectType : AppCompatActivity() {
@@ -23,21 +20,19 @@ class SelectType : AppCompatActivity() {
         travelling = findViewById(R.id.havingVehicle)
         traveller = findViewById(R.id.notHavingVehicle)
 
-        travelling.setOnClickListener{
+        travelling.setOnClickListener {
             val intent = Intent(this, MapActivity::class.java)
-            intent.putExtra("code",1)
+            intent.putExtra("code", 1)
             startActivity(intent)
         }
 
-        traveller.setOnClickListener{
+        traveller.setOnClickListener {
 
             val intent = Intent(this, MapActivity::class.java)
-            intent.putExtra("code",2)
+            intent.putExtra("code", 2)
             startActivity(intent)
 
         }
-
-
 
 
     }
@@ -72,7 +67,6 @@ class SelectType : AppCompatActivity() {
 //            }
 //        }
 //    }
-
 
 
 }

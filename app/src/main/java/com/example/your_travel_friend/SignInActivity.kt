@@ -11,7 +11,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.EventListener
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -21,7 +20,7 @@ class SignInActivity : AppCompatActivity() {
     private lateinit var mAuth: FirebaseAuth
     private lateinit var googleSignInClient: GoogleSignInClient
 
-    companion object{
+    companion object {
         private const val RC_SIGN_IN = 120
     }
 
@@ -41,7 +40,7 @@ class SignInActivity : AppCompatActivity() {
 
         mAuth = FirebaseAuth.getInstance()
 
-        sigInBtn.setOnClickListener{
+        sigInBtn.setOnClickListener {
             signIn()
         }
 
@@ -67,11 +66,11 @@ class SignInActivity : AppCompatActivity() {
                     firebaseAuthWithGoogle(account.idToken!!)
                 } catch (e: ApiException) {
                     // Google Sign In failed, update UI appropriately
-                        e.printStackTrace()
+                    e.printStackTrace()
                     Log.w("google_signin", "Google sign in failed", e)
                 }
-            }else{
-                Log.d("google_signin", "fafs "+ exception.exception)
+            } else {
+                Log.d("google_signin", "fafs " + exception.exception)
 
             }
         }
@@ -93,25 +92,25 @@ class SignInActivity : AppCompatActivity() {
             }
     }
 
-    fun selectActivity(){
+    fun selectActivity() {
         val currentUserId = FirebaseAuth.getInstance().currentUser!!.uid
         val db = FirebaseFirestore.getInstance()
 
         val documentReference = db.collection("users").document(currentUserId)
 
-        documentReference.addSnapshotListener(this,EventListener { snapshot, e ->
+        documentReference.addSnapshotListener(this, EventListener { snapshot, e ->
             if (e != null) {
                 Log.w("selectingActivity", "Listen failed.", e)
                 return@EventListener
             }
             if (snapshot != null && snapshot.exists()) {
-                val nextIntent = Intent(this,SelectType::class.java)
+                val nextIntent = Intent(this, SelectType::class.java)
                 Log.d("selectingActivity", "Current data: " + snapshot.data)
                 startActivity(nextIntent)
                 finish()
             } else {
                 Log.d("selectingActivity", "Current data: null")
-                val nextIntent = Intent(this,ProfileActivity::class.java)
+                val nextIntent = Intent(this, ProfileActivity::class.java)
                 startActivity(nextIntent)
                 finish()
             }

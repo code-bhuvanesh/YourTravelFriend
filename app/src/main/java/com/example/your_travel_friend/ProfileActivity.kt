@@ -1,11 +1,14 @@
 package com.example.your_travel_friend
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.SpannableStringBuilder
 import android.util.Log
-import android.widget.*
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
@@ -46,35 +49,46 @@ class ProfileActivity : AppCompatActivity() {
         saveBtn = findViewById(R.id.save_profile_btn)
         val isVaccinatedText = findViewById<TextView>(R.id.isVaccinatedText)
 
-        vacinatedCard.setOnClickListener{
-            if(!isVaccinated){
-                vacinatedCard.setCardBackgroundColor(ContextCompat.getColor(this,R.color.purple_500))
-                isVaccinatedText.setTextColor(ContextCompat.getColor(this,R.color.white))
+        vacinatedCard.setOnClickListener {
+            if (!isVaccinated) {
+                vacinatedCard.setCardBackgroundColor(
+                    ContextCompat.getColor(
+                        this,
+                        R.color.purple_500
+                    )
+                )
+                isVaccinatedText.setTextColor(ContextCompat.getColor(this, R.color.white))
                 isVaccinated = true
                 isVaccinatedText.text = "vaccinated"
-            }else{
-                vacinatedCard.setCardBackgroundColor(ContextCompat.getColor(this,R.color.white))
-                isVaccinatedText.setTextColor(ContextCompat.getColor(this,R.color.black))
+            } else {
+                vacinatedCard.setCardBackgroundColor(ContextCompat.getColor(this, R.color.white))
+                isVaccinatedText.setTextColor(ContextCompat.getColor(this, R.color.black))
                 isVaccinatedText.text = "not vaccinated"
                 isVaccinated = false
             }
         }
 
-        if(!isVaccinated){
+        if (!isVaccinated) {
             isVaccinatedText.text = "not vaccinated"
-        }else{
+        } else {
             isVaccinatedText.text = "vaccinated"
         }
 
-        if(currentUser != null){
+        if (currentUser != null) {
             nameEditText.text = SpannableStringBuilder(currentUser!!.displayName)
             Glide.with(this).load(currentUser!!.photoUrl).into(profilePic)
         }
 
         saveBtn.setOnClickListener {
             run {
-                saveDetails(nameEditText.text.toString(),phoneNumberEditText.text.toString(),licencePlateEditText.text.toString(),vehicleModelEditText.text.toString(),isVaccinated)
-                val intent = Intent(this,SelectType::class.java)
+                saveDetails(
+                    nameEditText.text.toString(),
+                    phoneNumberEditText.text.toString(),
+                    licencePlateEditText.text.toString(),
+                    vehicleModelEditText.text.toString(),
+                    isVaccinated
+                )
+                val intent = Intent(this, SelectType::class.java)
                 startActivity(intent)
             }
         }
@@ -87,10 +101,17 @@ class ProfileActivity : AppCompatActivity() {
         vehicleNumber: String,
         isVaccinated: Boolean
     ) {
-        if(currentUser != null){
+        if (currentUser != null) {
 
 
-            val userData = UserData(currentUser!!.uid,username,phoneNumber,licencePlateNumber,vehicleNumber,isVaccinated)
+            val userData = UserData(
+                currentUser!!.uid,
+                username,
+                phoneNumber,
+                licencePlateNumber,
+                vehicleNumber,
+                isVaccinated
+            )
             val documentReference = db.collection("users").document(currentUser!!.uid)
             documentReference.set(userData.geUserData())
                 .addOnSuccessListener { documentReference ->

@@ -15,11 +15,11 @@
         <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/activity_traveller.xml" value="0.25" />
         <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/activity_travelling.xml" value="0.175" />
         <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/activity_travelling2.xml" value="0.28489583333333335" />
-        <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/driver_details.xml" value="0.2" />
+        <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/driver_details.xml" value="0.33" />
       </map>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_16" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_X" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">

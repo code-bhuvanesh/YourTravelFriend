@@ -1,11 +1,11 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal">
     <androidx.cardview.widget.CardView
-        xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/cardView3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -35,19 +35,21 @@
                     android:id="@+id/driverImage"
                     android:layout_width="70dp"
                     android:layout_height="70dp"
-                    android:src="@tools:sample/avatars" />
+                    android:src="@drawable/user_logo" />
             </androidx.cardview.widget.CardView>
 
             <TextView
                 android:id="@+id/driver_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
+                android:layout_marginStart="10dp"
                 android:layout_marginTop="16dp"
                 android:text="userName"
                 android:textColor="@color/black"
                 android:textSize="24sp"
                 android:textStyle="bold"
+                app:layout_constraintEnd_toStartOf="@+id/vehicle_logo"
+                app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toEndOf="@+id/cardView4"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -73,8 +75,6 @@
                 android:layout_margin="10dp"
                 android:layout_marginTop="8dp"
                 android:src="@drawable/rating_logo"
-                app:layout_constraintEnd_toStartOf="@+id/rating"
-                app:layout_constraintHorizontal_bias="1.0"
                 app:layout_constraintStart_toEndOf="@+id/cardView4"
                 app:layout_constraintTop_toBottomOf="@+id/driver_name" />
 
@@ -84,8 +84,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
                 android:text="4.1 (54)"
-                app:layout_constraintEnd_toEndOf="@+id/driver_name"
-                app:layout_constraintStart_toStartOf="@+id/driver_name"
+                app:layout_constraintStart_toEndOf="@+id/imageView3"
                 app:layout_constraintTop_toBottomOf="@+id/driver_name" />
 
             <LinearLayout
@@ -95,10 +94,10 @@
                 android:layout_margin="5dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/request_button"
-                app:layout_constraintHorizontal_bias="0.567"
+                app:layout_constraintHorizontal_bias="0.228"
                 app:layout_constraintStart_toEndOf="@+id/arival_time"
                 app:layout_constraintTop_toBottomOf="@+id/rating"
-                app:layout_constraintVertical_bias="0.208">
+                app:layout_constraintVertical_bias="0.192">
 
                 <ImageView
                     android:layout_width="20dp"
@@ -125,24 +124,18 @@
                 android:layout_height="30dp"
                 android:layout_margin="10dp"
                 android:src="@drawable/car_logo"
-                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/request_button"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.291"
-                app:layout_constraintStart_toEndOf="@+id/driver_name"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.173" />
+                app:layout_constraintTop_toTopOf="parent" />
 
             <Button
                 android:id="@+id/request_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:layout_marginEnd="28dp"
+                android:layout_marginEnd="4dp"
                 android:text="request"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/vehicle_logo"
-                app:layout_constraintVertical_bias="0.0"
                 app:layout_goneMarginEnd="50dp" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
