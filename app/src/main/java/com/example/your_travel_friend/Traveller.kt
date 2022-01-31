@@ -20,6 +20,9 @@ class Traveller : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_traveller)
         title = "traveller"
+        val myLat = intent.extras!!.getDouble("myLatitude")
+        val myLng = intent.extras!!.getDouble("myLongitude")
+        val currentUserId = FirebaseAuth.getInstance().currentUser!!.uid
         val myDestinationLatitude = intent.extras!!.getDouble("latitude")
         val myDestinationLongitude = intent.extras!!.getDouble("longitude")
         val driverListView = findViewById<ListView>(R.id.driversListView)
@@ -41,7 +44,7 @@ class Traveller : AppCompatActivity() {
                                 val distance =
                                     SphericalUtil.computeDistanceBetween(myLatLng, dLatLng)
                                 Log.d("check_direction", "distance is = $distance")
-                                if (distance <= 100.0) {
+                                if (distance <= 100.0 && it.key != currentUserId) {
                                     Log.d("check_direction", "key = ${it.key}")
 
                                     val documentReference =
@@ -76,7 +79,7 @@ class Traveller : AppCompatActivity() {
                                                             "driver data added"
                                                         )
                                                     }
-                                                    val adapter = DriversListView(this, driversList)
+                                                    val adapter = DriversListView(this,LatLng(myLat,myLng),LatLng(myDestinationLatitude,myDestinationLongitude), driversList)
                                                     Log.d(
                                                         "driver_details",
                                                         "drivers:  $driversList"

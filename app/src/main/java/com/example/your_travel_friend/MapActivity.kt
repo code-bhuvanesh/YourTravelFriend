@@ -2,6 +2,7 @@ package com.example.your_travel_friend
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Address
@@ -12,7 +13,10 @@ import android.os.Bundle
 import android.text.SpannableStringBuilder
 import android.util.Log
 import android.view.KeyEvent
+import android.view.MotionEvent
+import android.view.View
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
@@ -35,7 +39,7 @@ import kotlin.collections.ArrayList
 
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
-    GoogleMap.OnCameraIdleListener {
+    GoogleMap.OnCameraIdleListener,GoogleMap.OnCameraMoveListener {
 
     private var origin_address: String = ""
     private lateinit var mapView: MapView
@@ -108,6 +112,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
                     if (destinationLatitude != null && destinationLongitude != null) {
                         travellerIntent.putExtra("latitude", destinationLatitude!!)
                         travellerIntent.putExtra("longitude", destinationLongitude!!)
+                        travellerIntent.putExtra("myLatitude", origin_lat)
+                        travellerIntent.putExtra("myLongitude", origin_lng)
                         startActivity(travellerIntent)
                     }
                 }
@@ -116,10 +122,21 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
 
     }
 
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        if (currentFocus != null) {
+            val imm = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(currentFocus!!.windowToken, 0)
+        }
+        return super.dispatchTouchEvent(ev)
+    }
+
     private fun initSearchLocation() {
 
         addressTextView.setOnEditorActionListener { v, actionId, event ->
             if(actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_SEARCH || event.action == KeyEvent.ACTION_DOWN || event.action == KeyEvent.KEYCODE_ENTER){
+                val imm = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(currentFocus!!.windowToken, 0)
+                cameraMoved = true
                 geoLocate()
                 true
             } else {
@@ -142,7 +159,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
         if(list.size >0){
             val geoLocateAddress = list.get(0)
             moveCamera(LatLng(geoLocateAddress.latitude,geoLocateAddress.longitude),defaultZoom)
-
         }
     }
 
@@ -186,6 +202,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
             map.isMyLocationEnabled = false
 //            getCurrentLocation()
             map.setOnCameraIdleListener(this)
+            map.setOnCameraMoveListener(this)
 
         }
     }
@@ -253,10 +270,11 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
             addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
         } catch (e: Exception) {
         }
-        setAddress(addresses!![0])
+//        setAddress(addresses!![0])
     }
 
     private fun setAddress(address: Address) {
+        Log.d("set_address", "setAddress: address : $address")
         Log.d("set_address", "setAddress: address : $address")
         if (address != null) {
             if (address.getAddressLine(0) != null) {
@@ -271,21 +289,24 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
 
     private var destinationLatitude: Double? = null
     private var destinationLongitude: Double? = null
+    private var cameraMoved = false
     override fun onCameraIdle() {
-        Log.d("map_camera", "onCameraMove: camera idle")
-        var addresses: List<Address>? = null
-        val geocoder = Geocoder(this, Locale.getDefault())
-        destinationLatitude = map.cameraPosition.target.latitude
-        destinationLongitude = map.cameraPosition.target.longitude
+        if (cameraMoved) {
+            Log.d("map_camera", "onCameraMove: camera idle")
+            var addresses: List<Address>? = null
+            val geocoder = Geocoder(this, Locale.getDefault())
+            destinationLatitude = map.cameraPosition.target.latitude
+            destinationLongitude = map.cameraPosition.target.longitude
 
-        try {
-            addresses = geocoder.getFromLocation(destinationLatitude!!, destinationLongitude!!, 1)
-            setAddress(addresses[0])
-            Log.d("map_camera", "onCameraMove: sent address")
-        } catch (e: IndexOutOfBoundsException) {
-            e.printStackTrace()
-        } catch (e: IOException) {
-            e.printStackTrace()
+            try {
+                addresses = geocoder.getFromLocation(destinationLatitude!!, destinationLongitude!!, 1)
+                setAddress(addresses[0])
+                Log.d("map_camera", "onCameraMove: sent address")
+            } catch (e: IndexOutOfBoundsException) {
+                e.printStackTrace()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
         }
     }
 
@@ -294,18 +315,25 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
         val db = Firebase.database
         val ref = db.getReference("drivers").child(currentUserId)
 
-        val destinationData = hashMapOf<String, String>(
-            "originLat" to origin_lat.toString(),
-            "originLng" to origin_lng.toString(),
-            "destLat" to destinationLatitude.toString(),
-            "destLng" to destinationLongitude.toString(),
-            "origin" to origin_address,
-            "destination" to addressTextView.text.toString()
-        )
-
-        ref.setValue(destinationData).addOnSuccessListener {
-            Toast.makeText(this, "added destination data to server", Toast.LENGTH_SHORT).show()
+        if(destinationLatitude != null && destinationLongitude != null){
+            val destinationData = hashMapOf<String, String>(
+                "originLat" to origin_lat.toString(),
+                "originLng" to origin_lng.toString(),
+                "destLat" to destinationLatitude.toString(),
+                "destLng" to destinationLongitude.toString(),
+                "origin" to origin_address,
+                "destination" to addressTextView.text.toString()
+            )
+            ref.setValue(destinationData).addOnSuccessListener {
+                Toast.makeText(this, "added destination data to server", Toast.LENGTH_SHORT).show()
+            }
         }
+
+    }
+
+    override fun onCameraMove() {
+        cameraMoved = true
+        Log.d("camera_listener", "onCameraMove: camera moved")
     }
 
 

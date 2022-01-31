@@ -113,7 +113,7 @@ class ProfileActivity : AppCompatActivity() {
                 isVaccinated
             )
             val documentReference = db.collection("users").document(currentUser!!.uid)
-            documentReference.set(userData.geUserData())
+            documentReference.set(userData.getUserData())
                 .addOnSuccessListener { documentReference ->
                     Log.d("addProfile", "user data added for user id ${currentUser!!.uid}")
                 }

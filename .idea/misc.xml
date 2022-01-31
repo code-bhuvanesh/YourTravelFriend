@@ -11,11 +11,13 @@
         <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/activity_maps.xml" value="0.33" />
         <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/activity_profile.xml" value="0.2" />
         <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/activity_select_type.xml" value="0.33" />
+        <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/activity_serach_for_vehicle.xml" value="0.28957365977205574" />
         <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/activity_sign_in.xml" value="0.25" />
-        <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/activity_traveller.xml" value="0.25" />
+        <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/activity_traveller.xml" value="0.2" />
         <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/activity_travelling.xml" value="0.175" />
         <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/activity_travelling2.xml" value="0.28489583333333335" />
         <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/driver_details.xml" value="0.33" />
+        <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/request_noitification.xml" value="0.28957365977205574" />
       </map>
     </option>
   </component>
