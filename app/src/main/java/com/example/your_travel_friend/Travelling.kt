@@ -85,7 +85,7 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
 
         val destinationMarker = MarkerOptions()
             .position(dest_latLng)
-        destinationMarker.title("destination")
+        destinationMarker.title("my destination")
         map.addMarker(destinationMarker)
         getrequestFromFirebase()
         val url = getUrl(LatLng(origin_lat, orign_lng), dest_latLng, "driving")
@@ -163,7 +163,7 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
                     openPopUp(passengerData["userName"]!!,passengerData["destinationName"]!!,db.getReference("requests").child(currentUserId),passengerData)
 
                 }
-                if(passengerData["originLat"] != null && passengerData["originLng"] != null && passengerData["destLat"] != null && passengerData["destLng"] != null){
+                if(passengerData["originLat"] != null && passengerData["originLng"] != null && passengerData["destLat"] != null && passengerData["destLng"] != null && passengerData["acceptedRide"] == "true"){
                     setPassengerLocation(passengerData)
                 }
 

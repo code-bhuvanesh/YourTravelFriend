@@ -6,20 +6,14 @@ import android.view.View
 import android.widget.ListView
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.your_travel_friend.adpters.DriversListView
 import com.example.your_travel_friend.model.UserData
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.ktx.database
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.ktx.Firebase
 import com.google.maps.android.SphericalUtil
 
 class Traveller : AppCompatActivity() {
@@ -36,6 +30,8 @@ class Traveller : AppCompatActivity() {
         val currentUserId = FirebaseAuth.getInstance().currentUser!!.uid
         val myDestinationLatitude = intent.extras!!.getDouble("latitude")
         val myDestinationLongitude = intent.extras!!.getDouble("longitude")
+        val myOriginLatitude = intent.extras!!.getDouble("myLatitude")
+        val myOriginLongitude = intent.extras!!.getDouble("myLongitude")
         val driverListView = findViewById<ListView>(R.id.driversListView)
         val user = FirebaseAuth.getInstance()
         val db = FirebaseFirestore.getInstance()
@@ -53,13 +49,18 @@ class Traveller : AppCompatActivity() {
                                     (it.child("destLat").value as String).toDouble()
                                 val dDestinationLng =
                                     (it.child("destLng").value as String).toDouble()
-                                val myLatLng = LatLng(myDestinationLatitude, myDestinationLongitude)
-                                val dLatLng = LatLng(dDestinationLat, dDestinationLng)
-                                val distance =
-                                    SphericalUtil.computeDistanceBetween(myLatLng, dLatLng)
+                                val dOriginLat =
+                                    (it.child("originLat").value as String).toDouble()
+                                val dOriginLng =
+                                    (it.child("originLng").value as String).toDouble()
+                                val myOriginLatLng = LatLng(myOriginLatitude, myOriginLongitude)
+                                val dOriginLatLng = LatLng(dOriginLat, dOriginLng)
+                                val myDestLatLng = LatLng(myDestinationLatitude, myDestinationLongitude)
+                                val dDestLatLng = LatLng(dDestinationLat, dDestinationLng)
+                                val distance = distanceCheck(myOriginLatLng,myDestLatLng,dOriginLatLng,dDestLatLng)
                                 Log.d("check_direction", "distance is = $distance")
-                                if (distance <= 1000.0 && it.key != currentUserId) {
-                                    Log.d("check_direction", "key = ${it.key}")
+                                Log.d("check_direction", "key = ${it.key}")
+                                if (distance && it.key != currentUserId) {
                                     val dc = db.collection("users").document(currentUserId).get().addOnSuccessListener (
                                         OnSuccessListener { tResult ->
                                             run {
@@ -98,27 +99,28 @@ class Traveller : AppCompatActivity() {
                                                                         "driver_data",
                                                                         "driver data added"
                                                                     )
+                                                                    prograssBar.visibility = View.GONE
+                                                                    adapter = DriversListView(
+                                                                        this,
+                                                                        destinationName!!,
+                                                                        currentUserName,
+                                                                        LatLng(myLat, myLng),
+                                                                        LatLng(
+                                                                            myDestinationLatitude,
+                                                                            myDestinationLongitude
+                                                                        ),
+                                                                        driversList
+                                                                    )
+                                                                    if(driversList.size == 0){
+                                                                        findViewById<TextView>(R.id.noDrivers).visibility = View.VISIBLE
+                                                                    }
+                                                                    Log.d(
+                                                                        "driver_details",
+                                                                        "drivers:  $driversList"
+                                                                    )
+                                                                    driverListView.adapter = adapter
                                                                 }
-                                                                prograssBar.visibility = View.GONE
-                                                                adapter = DriversListView(
-                                                                    this,
-                                                                    destinationName!!,
-                                                                    currentUserName,
-                                                                    LatLng(myLat, myLng),
-                                                                    LatLng(
-                                                                        myDestinationLatitude,
-                                                                        myDestinationLongitude
-                                                                    ),
-                                                                    driversList
-                                                                )
-                                                                if(driversList.size == 0){
-                                                                    findViewById<TextView>(R.id.noDrivers).visibility = View.VISIBLE
-                                                                }
-                                                                Log.d(
-                                                                    "driver_details",
-                                                                    "drivers:  $driversList"
-                                                                )
-                                                                driverListView.adapter = adapter
+
 
                                                             })
                                                         .addOnFailureListener {
@@ -126,12 +128,16 @@ class Traveller : AppCompatActivity() {
                                                                 "driver_data",
                                                                 "cannot get driver data"
                                                             )
+                                                            prograssBar.visibility = View.GONE
                                                         }
                                             }
                                         }
                                         )
 
                                 } else {
+                                    prograssBar.visibility = View.GONE
+                                    findViewById<TextView>(R.id.noDrivers).visibility = View.VISIBLE
+
                                     Log.d(
                                         "check_direction",
                                         "location is long lat: $myDestinationLatitude lng: $myDestinationLongitude"
@@ -145,6 +151,8 @@ class Traveller : AppCompatActivity() {
                     }
 
                 } else {
+                    prograssBar.visibility = View.GONE
+                    findViewById<TextView>(R.id.noDrivers).visibility = View.VISIBLE
                     Log.d("getting_realtime_data", "cannot get the data")
                 }
             }
@@ -152,6 +160,40 @@ class Traveller : AppCompatActivity() {
 
 
 
+    }
+
+    private fun distanceCheck(
+        myOriginLatLng: LatLng,
+        myDestLatLng: LatLng,
+        dOriginLatLng: LatLng,
+        dDestLatLng: LatLng
+    ): Boolean {
+        var myDistance = SphericalUtil.computeDistanceBetween(dOriginLatLng,dDestLatLng)
+        var myCenterlatlng = computeCentroid(listOf(dOriginLatLng,dDestLatLng))
+        var a = SphericalUtil.computeDistanceBetween(myCenterlatlng,myOriginLatLng)
+        var b = SphericalUtil.computeDistanceBetween(myCenterlatlng,myDestLatLng)
+        var c = SphericalUtil.computeDistanceBetween(myOriginLatLng,dOriginLatLng)
+        var d = SphericalUtil.computeDistanceBetween(myDestLatLng,dDestLatLng)
+        var result = ((a <= myDistance/1.7)
+                && (b <= myDistance/1.7))
+                && ((c <= myDistance/2)
+                && (d<= myDistance/2))
+        Log.d("distance","(${a.toInt() <= myDistance/1.7}: $a <= ${myDistance/1.5}")
+        Log.d("distance","(${b.toInt() <= myDistance/1.7} : $b <= ${myDistance/1.5}")
+        Log.d("distance","(${c.toInt() <= myDistance/2} : $c <= ${myDistance/2}")
+        Log.d("distance","(${d.toInt() <= myDistance/2} : $d <= ${myDistance/2}")
+        return true
+    }
+
+    private fun computeCentroid(points: List<LatLng>): LatLng? {
+        var latitude = 0.0
+        var longitude = 0.0
+        val n = points.size
+        for (point in points) {
+            latitude += point.latitude
+            longitude += point.longitude
+        }
+        return LatLng(latitude / n, longitude / n)
     }
 
     override fun onDestroy() {

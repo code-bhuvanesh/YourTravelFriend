@@ -7,12 +7,12 @@
         <deviceKey>
           <Key>
             <type value="VIRTUAL_DEVICE_PATH" />
-            <value value="C:\Users\bhuva\.android\avd\Pixel_3a.avd" />
+            <value value="C:\Users\bhuva\.android\avd\Pixel_4.avd" />
           </Key>
         </deviceKey>
       </Target>
     </runningDeviceTargetSelectedWithDropDown>
-    <timeTargetWasSelectedWithDropDown value="2022-01-31T19:21:42.215984100Z" />
+    <timeTargetWasSelectedWithDropDown value="2022-02-01T08:21:11.520442300Z" />
     <multipleDevicesSelectedInDropDown value="true" />
     <runningDeviceTargetsSelectedWithDialog>
       <Target>
@@ -20,7 +20,7 @@
         <deviceKey>
           <Key>
             <type value="VIRTUAL_DEVICE_PATH" />
-            <value value="C:\Users\bhuva\.android\avd\Pixel_3a.avd" />
+            <value value="C:\Users\bhuva\.android\avd\Pixel_4.avd" />
           </Key>
         </deviceKey>
       </Target>
@@ -28,8 +28,8 @@
         <type value="RUNNING_DEVICE_TARGET" />
         <deviceKey>
           <Key>
-            <type value="SERIAL_NUMBER" />
-            <value value="5393f0bb" />
+            <type value="VIRTUAL_DEVICE_PATH" />
+            <value value="C:\Users\bhuva\.android\avd\Pixel_3a.avd" />
           </Key>
         </deviceKey>
       </Target>

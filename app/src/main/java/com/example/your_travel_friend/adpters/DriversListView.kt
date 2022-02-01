@@ -1,6 +1,7 @@
 package com.example.your_travel_friend.adpters
 
 import android.app.Activity
+import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +11,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import com.example.your_travel_friend.R
+import com.example.your_travel_friend.RideAccepted
 import com.example.your_travel_friend.model.UserData
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
@@ -47,6 +49,7 @@ class DriversListView(val context: Activity, val destinationName: String,val use
         driverName.text = cUser.getUserData()["userName"]
         requestBtn.setOnClickListener {
             val db = Firebase.database
+            requestBtn.text = "requested"
             val ref = db.getReference("requests").child(cUser.getUserData()["userId"]!!)
             val passegerDestinationData = hashMapOf<String, String>(
                 "passengerId" to myCurrentUserId,
@@ -60,7 +63,6 @@ class DriversListView(val context: Activity, val destinationName: String,val use
             )
             driverId = cUser.getUserData()["userId"]!!
             ref.setValue(passegerDestinationData).addOnSuccessListener {
-                requestBtn.text = "requested"
                 Toast.makeText(context, "requested to driver", Toast.LENGTH_SHORT).show()
                 checkForRideAcceptedOrNot(cUser.getUserData().get("userId") as String)
             }
@@ -72,6 +74,7 @@ class DriversListView(val context: Activity, val destinationName: String,val use
         return driversList.size
     }
 
+    var checkActivty = 1
     fun checkForRideAcceptedOrNot(driverUserId: String) {
         val db = Firebase.database
         val passengerData = hashMapOf<String,String>()
@@ -84,7 +87,14 @@ class DriversListView(val context: Activity, val destinationName: String,val use
                     Log.d("driver_details", "onDataChange: ride accepted = ${passengerData["acceptedRide"] as String}")
                     val rideAccepted = (passengerData["acceptedRide"] as String).toBoolean()
                     if(rideAccepted){
-                        Toast.makeText(context, "ride is accepted", Toast.LENGTH_SHORT).show()
+                        if (checkActivty == 1) {
+                            Toast.makeText(context, "ride is accepted", Toast.LENGTH_SHORT).show()
+                            val rideIntent = Intent(context, RideAccepted::class.java)
+                            rideIntent.putExtra("driverId",driverUserId)
+                            Log.d("checkActivity", "onDataChange: driver id:$driverUserId no: ${checkActivty++}")
+                            context.startActivity(rideIntent)
+                            context.finish()
+                        }
                     }else{
                         requestBtn.text = "request"
                         deleteDataBase()

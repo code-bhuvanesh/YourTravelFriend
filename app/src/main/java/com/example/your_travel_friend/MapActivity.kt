@@ -57,7 +57,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
-
+        setTitle("choose your location")
         mapView = findViewById(R.id.map_view)
         addressTextView = findViewById(R.id.addressTextView)
         setDestinationBtn = findViewById(R.id.confirm_destinationBtn)

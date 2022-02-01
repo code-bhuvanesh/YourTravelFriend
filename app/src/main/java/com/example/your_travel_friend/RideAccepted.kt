@@ -22,6 +22,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
+import com.google.maps.android.PolyUtil
 
 class RideAccepted : AppCompatActivity(), OnMapReadyCallback {
 
@@ -39,9 +40,9 @@ class RideAccepted : AppCompatActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_ride_accepted)
-        title = "travelling"
+        title = "ride"
 
-        mapView = findViewById(R.id.travellingMapView)
+        mapView = findViewById(R.id.rideMapView)
         driverId
         var mapViewBundle: Bundle? = null
 
@@ -50,6 +51,7 @@ class RideAccepted : AppCompatActivity(), OnMapReadyCallback {
         }
         mapView.onCreate(mapViewBundle)
         mapView.getMapAsync(this)
+
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -65,13 +67,13 @@ class RideAccepted : AppCompatActivity(), OnMapReadyCallback {
         ) {
             return
         }
+        driverId = intent.extras!!.getString("driverId")!!
         map.isMyLocationEnabled = true
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient((this))
 
         getCurrentLocation()
-        driverId = intent.extras!!.getString("driverId")!!
-
+        getrequestFromFirebase()
 
         val resultDistance = FloatArray(10)
 
