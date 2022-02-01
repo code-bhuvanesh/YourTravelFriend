@@ -10,11 +10,35 @@
         android:id="@+id/driversListView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        tools:listitem="@layout/driver_details"
         android:divider="@null"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:listitem="@layout/driver_details" />
+
+    <TextView
+        android:id="@+id/noDrivers"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="no drivers found \n try again"
+        android:textAlignment="center"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/driversListView"
+        app:layout_constraintTop_toTopOf="@+id/driversListView" />
+
+    <ProgressBar
+        android:id="@+id/driverPrograssBar"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:progressDrawable="@drawable/circular_prograss_bar"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/driversListView"
+        app:layout_constraintTop_toTopOf="@+id/driversListView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

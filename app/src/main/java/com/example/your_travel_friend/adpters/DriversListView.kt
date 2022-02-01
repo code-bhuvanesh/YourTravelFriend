@@ -22,6 +22,8 @@ import com.google.firebase.ktx.Firebase
 class DriversListView(val context: Activity, val destinationName: String,val userName:String,val myLocation: LatLng ,val myDestination: LatLng,val driversList: MutableList<UserData>): ArrayAdapter<UserData>(context,
     R.layout.driver_details) {
     lateinit var  view: View
+    lateinit var  requestBtn: TextView
+    var driverId = ""
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
 
@@ -32,7 +34,7 @@ class DriversListView(val context: Activity, val destinationName: String,val use
         val driverName: TextView = view.findViewById(R.id.driver_name)
         val arivalTime: TextView = view.findViewById(R.id.arival_time)
         val rating: TextView = view.findViewById(R.id.rating)
-        val requestBtn: TextView = view.findViewById(R.id.request_button)
+        requestBtn= view.findViewById(R.id.request_button)
         val vehicleImg: ImageView = view.findViewById(R.id.vehicle_logo)
         if(position == 1){
             arivalTime.text = "9:50 AM"
@@ -56,7 +58,9 @@ class DriversListView(val context: Activity, val destinationName: String,val use
                 "destinationName" to destinationName,
                 "acceptedRide" to ""
             )
+            driverId = cUser.getUserData()["userId"]!!
             ref.setValue(passegerDestinationData).addOnSuccessListener {
+                requestBtn.text = "requested"
                 Toast.makeText(context, "requested to driver", Toast.LENGTH_SHORT).show()
                 checkForRideAcceptedOrNot(cUser.getUserData().get("userId") as String)
             }
@@ -82,6 +86,8 @@ class DriversListView(val context: Activity, val destinationName: String,val use
                     if(rideAccepted){
                         Toast.makeText(context, "ride is accepted", Toast.LENGTH_SHORT).show()
                     }else{
+                        requestBtn.text = "request"
+                        deleteDataBase()
                         Toast.makeText(context, "ride is not accepted", Toast.LENGTH_SHORT).show()
 
                     }
@@ -98,5 +104,13 @@ class DriversListView(val context: Activity, val destinationName: String,val use
         }
         val ref = db.getReference("requests").child(driverUserId)
         ref.addValueEventListener(childEventListener)
+    }
+
+    fun deleteDataBase(){
+        val db = Firebase.database
+        val ref = db.getReference("requests").child(driverId)
+        ref.removeValue().addOnSuccessListener {
+            Log.d("database","removed request from database")
+        }
     }
 }

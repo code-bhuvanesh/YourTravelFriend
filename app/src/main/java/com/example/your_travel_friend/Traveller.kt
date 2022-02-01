@@ -2,7 +2,10 @@ package com.example.your_travel_friend
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.ListView
+import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.your_travel_friend.adpters.DriversListView
@@ -21,6 +24,7 @@ import com.google.maps.android.SphericalUtil
 
 class Traveller : AppCompatActivity() {
     private val driversList: MutableList<UserData> = mutableListOf()
+    private var adapter: DriversListView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,6 +40,9 @@ class Traveller : AppCompatActivity() {
         val user = FirebaseAuth.getInstance()
         val db = FirebaseFirestore.getInstance()
         val rb = FirebaseDatabase.getInstance().getReference("drivers")
+        val prograssBar = findViewById<ProgressBar>(R.id.driverPrograssBar)
+        prograssBar.visibility = View.VISIBLE
+
         rb.get().addOnSuccessListener { data ->
             run {
                 if (data.exists()) {
@@ -51,7 +58,7 @@ class Traveller : AppCompatActivity() {
                                 val distance =
                                     SphericalUtil.computeDistanceBetween(myLatLng, dLatLng)
                                 Log.d("check_direction", "distance is = $distance")
-                                if (distance <= 100.0 && it.key != currentUserId) {
+                                if (distance <= 1000.0 && it.key != currentUserId) {
                                     Log.d("check_direction", "key = ${it.key}")
                                     val dc = db.collection("users").document(currentUserId).get().addOnSuccessListener (
                                         OnSuccessListener { tResult ->
@@ -92,7 +99,8 @@ class Traveller : AppCompatActivity() {
                                                                         "driver data added"
                                                                     )
                                                                 }
-                                                                val adapter = DriversListView(
+                                                                prograssBar.visibility = View.GONE
+                                                                adapter = DriversListView(
                                                                     this,
                                                                     destinationName!!,
                                                                     currentUserName,
@@ -103,6 +111,9 @@ class Traveller : AppCompatActivity() {
                                                                     ),
                                                                     driversList
                                                                 )
+                                                                if(driversList.size == 0){
+                                                                    findViewById<TextView>(R.id.noDrivers).visibility = View.VISIBLE
+                                                                }
                                                                 Log.d(
                                                                     "driver_details",
                                                                     "drivers:  $driversList"
@@ -137,11 +148,15 @@ class Traveller : AppCompatActivity() {
                     Log.d("getting_realtime_data", "cannot get the data")
                 }
             }
-
         }
 
 
 
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        adapter?.deleteDataBase()
     }
 
 }

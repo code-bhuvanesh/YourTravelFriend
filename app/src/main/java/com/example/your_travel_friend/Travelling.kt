@@ -163,6 +163,9 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
                     openPopUp(passengerData["userName"]!!,passengerData["destinationName"]!!,db.getReference("requests").child(currentUserId),passengerData)
 
                 }
+                if(passengerData["originLat"] != null && passengerData["originLng"] != null && passengerData["destLat"] != null && passengerData["destLng"] != null){
+                    setPassengerLocation(passengerData)
+                }
 
             }
 
@@ -197,14 +200,23 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
         val focusable = true // lets taps outside the popup also dismiss it
         val view =  mapView.rootView
         val popupWindow = PopupWindow(popupView, width, height, focusable)
+        popupWindow.setElevation(20.0f)
 
         popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
-
+        popupView.setOnTouchListener { _, _ ->
+            rideAccepted = false
+            passengerData["acceptedRide"] = "false"
+            Log.d("ride","not accepted")
+            db.setValue(passengerData)
+            popupWindow.dismiss()
+            true
+        }
         popupView.findViewById<Button>(R.id.passengerAccept).setOnClickListener {
             rideAccepted = true
             passengerData["acceptedRide"] = "true"
             Log.d("ride","accepted")
             db.setValue(passengerData)
+            setPassengerLocation(passengerData)
             popupWindow.dismiss()
         }
         popupView.findViewById<Button>(R.id.passengerDecline).setOnClickListener {
@@ -216,6 +228,32 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
         }
     }
 
+    private fun setPassengerLocation(passengerData: HashMap<String, String>) {
+        val passengerLatitude = passengerData["originLat"]
+        val passengerLongitude = passengerData["originLng"]
+        var pDestinationLatitude = passengerData["destLat"]!!
+        var pDestinationLongitude = passengerData["destLng"]!!
 
+        val passengerMarker = MarkerOptions()
+            .position(LatLng(passengerLatitude!!.toDouble(),passengerLongitude!!.toDouble()))
+            .title("passenger Location")
+        val passengerDestinationMarker = MarkerOptions()
+            .position(LatLng(pDestinationLatitude.toDouble(),pDestinationLongitude.toDouble()))
+            .title("passenger Location")
+        if(map != null){
+            map.addMarker(passengerMarker)
+            map.addMarker(passengerDestinationMarker)
+        }
+    }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        val currentUserId = FirebaseAuth.getInstance().currentUser!!.uid
+        val db = Firebase.database
+        val ref = db.getReference("drivers").child(currentUserId)
+
+            ref.removeValue().addOnSuccessListener {
+                Toast.makeText(this, "removed travelling destination", Toast.LENGTH_SHORT).show()
+            }
+        }
 }
