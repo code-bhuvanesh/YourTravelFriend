@@ -5,7 +5,10 @@ import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.your_travel_friend.directionHelpers.TaskLoadedCallback
@@ -19,6 +22,13 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
 
 
 class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
@@ -77,6 +87,7 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
             .position(dest_latLng)
         destinationMarker.title("destination")
         map.addMarker(destinationMarker)
+        getrequestFromFirebase()
         val url = getUrl(LatLng(origin_lat, orign_lng), dest_latLng, "driving")
         val resultDistance = FloatArray(10)
 
@@ -133,10 +144,78 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
         return "https://maps.googleapis.com/maps/api/directions/$output?$parameters&key=AIzaSyDkMQZjs8Hxxjt0uL8X0xoCHVi5UYscvVU"
     }
 
+    fun getrequestFromFirebase() {
+        val currentUserId = FirebaseAuth.getInstance().currentUser!!.uid
+        val db = Firebase.database
+        val passengerData = hashMapOf<String,String>()
+        val childEventListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                snapshot.children.forEach {
+                    passengerData[it.key.toString()] = it.value.toString()
+                }
+                Log.d("dataChange","data = ${passengerData.toString()}")
+                if(passengerData["userName"] != null && passengerData["destinationName"] != null && passengerData["acceptedRide"] == ""){
+                    Log.d("dataChange","card pop up")
+//                    val intent = Intent(this@Travelling, PassengerPopCard::class.java)
+//                    intent.putExtra("passengerName", passengerData["userName"])
+//                    intent.putExtra("passengerDestination", passengerData["destinationName"])
+//                    startActivity(intent)
+                    openPopUp(passengerData["userName"]!!,passengerData["destinationName"]!!,db.getReference("requests").child(currentUserId),passengerData)
+
+                }
+
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.d("dataChange","error getting data")
+            }
+
+        }
+        val ref = db.getReference("requests").child(currentUserId)
+        ref.addValueEventListener(childEventListener)
+    }
+
+    var rideAccepted = false
     override fun onTaskDone(vararg values: Any?) {
         currentPolyline?.remove()
         Log.d("addPolyline", "onTaskDone: adding polyline")
         currentPolyline = map.addPolyline(values[0] as PolylineOptions)
     }
+
+    fun openPopUp(
+        username: String,
+        destination: String,
+        db: DatabaseReference,
+        passengerData: HashMap<String, String>
+    ){
+        val inflater = getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        val popupView: View = inflater.inflate(R.layout.activity_passenger_pop_card, null)
+        popupView.findViewById<TextView>(R.id.passengerName).text = username
+        popupView.findViewById<TextView>(R.id.passengerDestination).text = destination
+        val width = LinearLayout.LayoutParams.WRAP_CONTENT
+        val height = LinearLayout.LayoutParams.WRAP_CONTENT
+        val focusable = true // lets taps outside the popup also dismiss it
+        val view =  mapView.rootView
+        val popupWindow = PopupWindow(popupView, width, height, focusable)
+
+        popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
+
+        popupView.findViewById<Button>(R.id.passengerAccept).setOnClickListener {
+            rideAccepted = true
+            passengerData["acceptedRide"] = "true"
+            Log.d("ride","accepted")
+            db.setValue(passengerData)
+            popupWindow.dismiss()
+        }
+        popupView.findViewById<Button>(R.id.passengerDecline).setOnClickListener {
+            rideAccepted = false
+            passengerData["acceptedRide"] = "false"
+            Log.d("ride","not accepted")
+            db.setValue(passengerData)
+            popupWindow.dismiss()
+        }
+    }
+
+
 
 }

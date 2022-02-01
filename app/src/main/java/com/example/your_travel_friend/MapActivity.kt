@@ -41,6 +41,7 @@ import kotlin.collections.ArrayList
 class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
     GoogleMap.OnCameraIdleListener,GoogleMap.OnCameraMoveListener {
 
+    private var destinationName: String = ""
     private var origin_address: String = ""
     private lateinit var mapView: MapView
     private lateinit var addressTextView: EditText
@@ -114,6 +115,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
                         travellerIntent.putExtra("longitude", destinationLongitude!!)
                         travellerIntent.putExtra("myLatitude", origin_lat)
                         travellerIntent.putExtra("myLongitude", origin_lng)
+                        travellerIntent.putExtra("destination", destinationName)
                         startActivity(travellerIntent)
                     }
                 }
@@ -279,6 +281,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
         if (address != null) {
             if (address.getAddressLine(0) != null) {
                 addressTextView.text = SpannableStringBuilder(address.getAddressLine(0))
+                destinationName = address.getAddressLine(0)
             }
             if (address.getAddressLine(1) != null) {
                 addressTextView.text =
