@@ -10,20 +10,17 @@ import android.location.Geocoder
 import android.location.Location
 import android.location.LocationListener
 import android.os.Bundle
+import android.os.Looper
 import android.text.SpannableStringBuilder
 import android.util.Log
-import android.view.KeyEvent
-import android.view.MotionEvent
-import android.view.View
+import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContentProviderCompat.requireContext
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -78,6 +75,28 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
         mapView.onResume()
         map = googleMap
         getLocationPermission()
+        val fusedLocationProviderClient by lazy {
+            LocationServices.getFusedLocationProviderClient(this)
+        }
+
+        val locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                locationResult ?: return
+                for (location in locationResult.locations){
+                    //moveCamera(LatLng(location.latitude,location.longitude), defaultZoom)
+                    Log.d("locationChanged","my location is changed")
+                    origin_lat = location.latitude
+                    origin_lng = location.longitude
+                }
+                super.onLocationResult(locationResult)
+            }
+        }
+
+        val locationRequest = LocationRequest.create().apply {
+            interval = 10_000
+            fastestInterval = 5_000
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        }
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
             == PackageManager.PERMISSION_GRANTED &&
@@ -92,8 +111,13 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
         mLocationRequest.fastestInterval = 5000
         mLocationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
 
-        LocationServices.getFusedLocationProviderClient(this)
-            .requestLocationUpdates(mLocationRequest, mLocationCallback, mainLooper)
+//        LocationServices.getFusedLocationProviderClient(this)
+//            .requestLocationUpdates(locationRequest, locationCallback, mainLooper)
+        fusedLocationProviderClient.requestLocationUpdates(
+            locationRequest,
+            locationCallback,
+            Looper.getMainLooper()
+        )
 
         setDestinationBtn.setOnClickListener {
             run {
@@ -105,6 +129,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
                     if (destinationLatitude != null && destinationLongitude != null) {
                         travellingIntent.putExtra("latitude", destinationLatitude!!)
                         travellingIntent.putExtra("longitude", destinationLongitude!!)
+                        fusedLocationProviderClient.removeLocationUpdates(locationCallback)
                         startActivity(travellingIntent)
                     }
                 } else if (code == 2) {
@@ -116,6 +141,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
                         travellerIntent.putExtra("myLatitude", origin_lat)
                         travellerIntent.putExtra("myLongitude", origin_lng)
                         travellerIntent.putExtra("destination", destinationName)
+                        fusedLocationProviderClient.removeLocationUpdates(locationCallback)
                         startActivity(travellerIntent)
                     }
                 }
@@ -264,16 +290,26 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom))
     }
 
-    override fun onLocationChanged(location: Location) {
-        Log.d("set_address", "location changed")
-        val geocoder = Geocoder(this, Locale.getDefault())
-        var addresses: List<Address>? = null
-        try {
-            addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
-        } catch (e: Exception) {
-        }
-//        setAddress(addresses!![0])
+    override fun onLocationChanged(p0: Location) {
+        Log.d("locationChanged","location is changed lat: ${p0.latitude}, longitude: ${p0.longitude}")
     }
+
+    override fun onLocationChanged(locations: MutableList<Location>) {
+        super.onLocationChanged(locations)
+        Log.d("locationChanged","location is changed lat: ${locations[0].latitude}, longitude: ${locations[0].longitude}")
+
+    }
+    //    override fun onLocationChanged(location: Location) {
+//        Log.d("set_address", "location changed")
+//        val geocoder = Geocoder(this, Locale.getDefault())
+//        var addresses: List<Address>? = null
+//        try {
+//            addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+//        } catch (e: Exception) {
+//        }
+////        setAddress(addresses!![0])
+//    }
+
 
     private fun setAddress(address: Address) {
         Log.d("set_address", "setAddress: address : $address")
@@ -337,6 +373,25 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
     override fun onCameraMove() {
         cameraMoved = true
         Log.d("camera_listener", "onCameraMove: camera moved")
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    fun openFarePopupView(intent: Intent){
+        val inflater = getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        val popupView: View = inflater.inflate(R.layout.set_price_layout,this.parent as ViewGroup)
+        val width = LinearLayout.LayoutParams.WRAP_CONTENT
+        val height = LinearLayout.LayoutParams.WRAP_CONTENT
+        val focusable = false // lets taps outside the popup also dismiss it
+        val view =  mapView.rootView
+        val popupWindow = PopupWindow(popupView, width, height, focusable)
+        popupWindow.setElevation(20.0f)
+
+        popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
+        popupView.setOnTouchListener { _, _ ->
+            popupWindow.dismiss()
+            true
+        }
+
     }
 
 

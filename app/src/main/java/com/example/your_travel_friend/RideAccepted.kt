@@ -2,27 +2,35 @@ package com.example.your_travel_friend
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.pm.PackageManager
-import androidx.appcompat.app.AppCompatActivity
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
-import com.google.maps.android.PolyUtil
+
 
 class RideAccepted : AppCompatActivity(), OnMapReadyCallback {
 
@@ -30,7 +38,7 @@ class RideAccepted : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var map: GoogleMap
     private var MAP_VIEW_BUNDLE_KEY = "mapViewBundleKey"
-    private val defaultZoom = 15f
+    private val defaultZoom = 16f
     private var fusedLocationProviderClient: FusedLocationProviderClient? = null
     private var travellingDistance = ""
 
@@ -123,10 +131,8 @@ class RideAccepted : AppCompatActivity(), OnMapReadyCallback {
                     passengerData[it.key.toString()] = it.value.toString()
                 }
                 Log.d("dataChange","data = ${passengerData.toString()}")
-
-                if(passengerData["originLat"] != null && passengerData["originLng"] != null && passengerData["destLat"] != null && passengerData["destLng"] != null){
-                    getDriverLocation(passengerData)
-                }
+//                setDriverLocation(passengerData["originLat"].toString().toDouble(),passengerData["originLng"].toString().toDouble())
+                driverLiveLocation()
 
             }
 
@@ -138,16 +144,57 @@ class RideAccepted : AppCompatActivity(), OnMapReadyCallback {
         val ref = db.getReference("drivers").child(driverId)
         ref.addValueEventListener(childEventListener)
     }
-    private fun getDriverLocation(passengerData: HashMap<String, String>) {
-        val driverLatitude = passengerData["originLat"]
-        val driverLongitude = passengerData["originLng"]
+    var driverMarker: MarkerOptions? = null
+    private fun setDriverLocation(driverLatitude: Double,driverLongitude: Double) {
 
-        val passengerMarker = MarkerOptions()
-            .position(LatLng(driverLatitude!!.toDouble(),driverLongitude!!.toDouble()))
+        driverMarker = MarkerOptions()
+            .position(LatLng(driverLatitude,driverLongitude))
             .title("passenger Location")
-        if(map != null){
-            map.addMarker(passengerMarker)
+            .icon(bitmapFromVector(this,R.drawable.car_pin_icon))
+        if(driverMarker != null){
+            map.clear()
+            map.addMarker(driverMarker!!)
         }
+    }
+
+    private fun bitmapFromVector(context: Context, vectorResId: Int): BitmapDescriptor? {
+        val vectorDrawable = ContextCompat.getDrawable(context, vectorResId)
+
+        vectorDrawable!!.setBounds(
+            0,
+            0,
+            vectorDrawable.intrinsicWidth,
+            vectorDrawable.intrinsicHeight
+        )
+
+        val bitmap = Bitmap.createBitmap(
+            vectorDrawable.intrinsicWidth,
+            vectorDrawable.intrinsicHeight,
+            Bitmap.Config.ARGB_8888
+        )
+
+        val canvas = Canvas(bitmap)
+
+        vectorDrawable.draw(canvas)
+        return BitmapDescriptorFactory.fromBitmap(bitmap)
+    }
+
+    private fun driverLiveLocation() {
+        val db = FirebaseFirestore.getInstance()
+        val rb = FirebaseDatabase.getInstance().getReference("drivers")
+            .child(driverId)
+        val childEventListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                var driverLatitude = snapshot.child("originLat").value.toString().toDouble()
+                var driverLongitude = snapshot.child("originLng").value.toString().toDouble()
+                setDriverLocation(driverLatitude,driverLongitude)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+        }
+        rb.addValueEventListener(childEventListener)
     }
 
 

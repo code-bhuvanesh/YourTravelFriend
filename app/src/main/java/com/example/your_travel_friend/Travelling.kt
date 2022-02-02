@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.Looper
 import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -12,8 +13,7 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.your_travel_friend.directionHelpers.TaskLoadedCallback
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
@@ -23,10 +23,7 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.*
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 
@@ -36,7 +33,7 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
 
     private lateinit var map: GoogleMap
     private var MAP_VIEW_BUNDLE_KEY = "mapViewBundleKey"
-    private val defaultZoom = 15f
+    private val defaultZoom = 16f
     private var fusedLocationProviderClient: FusedLocationProviderClient? = null
     private var travellingDistance = ""
 
@@ -88,8 +85,49 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
         destinationMarker.title("my destination")
         map.addMarker(destinationMarker)
         getrequestFromFirebase()
+        getMyLocation()
         val url = getUrl(LatLng(origin_lat, orign_lng), dest_latLng, "driving")
         val resultDistance = FloatArray(10)
+
+    }
+
+    fun getMyLocation(){
+        val rb = FirebaseDatabase.getInstance().getReference("drivers")
+            .child(FirebaseAuth.getInstance().currentUser!!.uid)
+        val locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                locationResult ?: return
+                for (location in locationResult.locations){
+//                    moveCamera(LatLng(location.latitude,location.longitude), defaultZoom)
+                    Log.d("locationChanged","my location is changed")
+                    origin_lat = location.latitude
+                    orign_lng = location.longitude
+                    rb.child("originLat").setValue(origin_lat.toString())
+                    rb.child("originLng").setValue(orign_lng.toString())
+                }
+                super.onLocationResult(locationResult)
+            }
+        }
+
+        val locationRequest = LocationRequest.create().apply {
+            interval = 10_000
+            fastestInterval = 5_000
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        }
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            fusedLocationProviderClient?.requestLocationUpdates(
+                locationRequest,
+                locationCallback,
+                Looper.getMainLooper()
+            )
+        }
 
     }
 
@@ -156,10 +194,6 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
                 Log.d("dataChange","data = ${passengerData.toString()}")
                 if(passengerData["userName"] != null && passengerData["destinationName"] != null && passengerData["acceptedRide"] == ""){
                     Log.d("dataChange","card pop up")
-//                    val intent = Intent(this@Travelling, PassengerPopCard::class.java)
-//                    intent.putExtra("passengerName", passengerData["userName"])
-//                    intent.putExtra("passengerDestination", passengerData["destinationName"])
-//                    startActivity(intent)
                     openPopUp(passengerData["userName"]!!,passengerData["destinationName"]!!,db.getReference("requests").child(currentUserId),passengerData)
 
                 }

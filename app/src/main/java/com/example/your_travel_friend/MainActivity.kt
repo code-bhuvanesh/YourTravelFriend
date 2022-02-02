@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
             val ref = db.getReference("drivers").child(currentUserId)
 
             ref.removeValue().addOnSuccessListener {
-                Toast.makeText(this, "removed travelling destination", Toast.LENGTH_SHORT).show()
+//                Toast.makeText(this, "removed travelling destination", Toast.LENGTH_SHORT).show()
             }
             startActivity(mapActivityIntent)
             finish()
