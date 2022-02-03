@@ -2,7 +2,10 @@ package com.example.your_travel_friend
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.os.Bundle
 import android.os.Looper
 import android.util.Log
@@ -12,19 +15,20 @@ import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.example.your_travel_friend.directionHelpers.TaskLoadedCallback
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.maps.model.Polyline
-import com.google.android.gms.maps.model.PolylineOptions
+import com.google.android.gms.maps.model.*
+import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.google.firebase.database.ktx.database
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.ktx.Firebase
 
 
@@ -46,6 +50,8 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
         title = "travelling"
 
         mapView = findViewById(R.id.travellingMapView)
+        val passengerCard = findViewById<LinearLayout>(R.id.driver_details)
+        passengerCard.visibility = View.GONE
 
         var mapViewBundle: Bundle? = null
 
@@ -89,6 +95,27 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
         val url = getUrl(LatLng(origin_lat, orign_lng), dest_latLng, "driving")
         val resultDistance = FloatArray(10)
 
+    }
+    private fun bitmapFromVector(context: Context, vectorResId: Int): BitmapDescriptor? {
+        val vectorDrawable = ContextCompat.getDrawable(context, vectorResId)
+
+        vectorDrawable!!.setBounds(
+            0,
+            0,
+            vectorDrawable.intrinsicWidth,
+            vectorDrawable.intrinsicHeight
+        )
+
+        val bitmap = Bitmap.createBitmap(
+            vectorDrawable.intrinsicWidth,
+            vectorDrawable.intrinsicHeight,
+            Bitmap.Config.ARGB_8888
+        )
+
+        val canvas = Canvas(bitmap)
+
+        vectorDrawable.draw(canvas)
+        return BitmapDescriptorFactory.fromBitmap(bitmap)
     }
 
     fun getMyLocation(){
@@ -181,11 +208,10 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
         // Building the url to the web service
         return "https://maps.googleapis.com/maps/api/directions/$output?$parameters&key=AIzaSyDkMQZjs8Hxxjt0uL8X0xoCHVi5UYscvVU"
     }
-
+    val passengerData = hashMapOf<String,String>()
     fun getrequestFromFirebase() {
         val currentUserId = FirebaseAuth.getInstance().currentUser!!.uid
         val db = Firebase.database
-        val passengerData = hashMapOf<String,String>()
         val childEventListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 snapshot.children.forEach {
@@ -229,36 +255,42 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
         val popupView: View = inflater.inflate(R.layout.activity_passenger_pop_card, null)
         popupView.findViewById<TextView>(R.id.passengerName).text = username
         popupView.findViewById<TextView>(R.id.passengerDestination).text = destination
+        popupView.findViewById<TextView>(R.id.rideFare).text = "ride fare : ₹${passengerData["rideFare"].toString()}"
         val width = LinearLayout.LayoutParams.WRAP_CONTENT
         val height = LinearLayout.LayoutParams.WRAP_CONTENT
-        val focusable = true // lets taps outside the popup also dismiss it
+        val focusable = true
         val view =  mapView.rootView
         val popupWindow = PopupWindow(popupView, width, height, focusable)
         popupWindow.setElevation(20.0f)
 
-        popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
-        popupView.setOnTouchListener { _, _ ->
-            rideAccepted = false
-            passengerData["acceptedRide"] = "false"
-            Log.d("ride","not accepted")
-            db.setValue(passengerData)
-            popupWindow.dismiss()
-            true
-        }
-        popupView.findViewById<Button>(R.id.passengerAccept).setOnClickListener {
-            rideAccepted = true
-            passengerData["acceptedRide"] = "true"
-            Log.d("ride","accepted")
-            db.setValue(passengerData)
-            setPassengerLocation(passengerData)
-            popupWindow.dismiss()
-        }
-        popupView.findViewById<Button>(R.id.passengerDecline).setOnClickListener {
-            rideAccepted = false
-            passengerData["acceptedRide"] = "false"
-            Log.d("ride","not accepted")
-            db.setValue(passengerData)
-            popupWindow.dismiss()
+        try {
+            popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
+            popupView.setOnTouchListener { _, _ ->
+                rideAccepted = false
+                passengerData["acceptedRide"] = "false"
+                Log.d("ride","not accepted")
+                db.setValue(passengerData)
+                popupWindow.dismiss()
+                true
+            }
+            popupView.findViewById<Button>(R.id.passengerAccept).setOnClickListener {
+                rideAccepted = true
+                passengerData["acceptedRide"] = "true"
+                Log.d("ride","accepted")
+                db.setValue(passengerData)
+                setPassengerLocation(passengerData)
+                setPassengerDetails(passengerData["rideFare"].toString())
+                popupWindow.dismiss()
+            }
+            popupView.findViewById<Button>(R.id.passengerDecline).setOnClickListener {
+                rideAccepted = false
+                passengerData["acceptedRide"] = "false"
+                Log.d("ride","not accepted")
+                db.setValue(passengerData)
+                popupWindow.dismiss()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
@@ -271,13 +303,49 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
         val passengerMarker = MarkerOptions()
             .position(LatLng(passengerLatitude!!.toDouble(),passengerLongitude!!.toDouble()))
             .title("passenger Location")
+            .icon(bitmapFromVector(this,R.drawable.passenger_location))
         val passengerDestinationMarker = MarkerOptions()
             .position(LatLng(pDestinationLatitude.toDouble(),pDestinationLongitude.toDouble()))
             .title("passenger Location")
+            .icon(bitmapFromVector(this,R.drawable.passenger_dest))
         if(map != null){
             map.addMarker(passengerMarker)
             map.addMarker(passengerDestinationMarker)
         }
+    }
+
+    fun setPassengerDetails(fareprice: String) {
+
+        val passengerCard = findViewById<LinearLayout>(R.id.driver_details)
+        val passengerName = findViewById<TextView>(R.id.username)
+        val passengerPhoneNumber = findViewById<TextView>(R.id.driver_phone_number)
+        val isVaccinated = findViewById<TextView>(R.id.is_vaccinated_driver)
+        val passengerAddress = findViewById<TextView>(R.id.user_address)
+        val passengerFare = findViewById<TextView>(R.id.passenger_fare)
+        passengerFare.text = "₹$fareprice"
+        Log.d("passengerDetails","${passengerData.toString()}")
+        passengerName.text = passengerData["userName"]
+        passengerAddress.text ="passenger destination: "+ passengerData["destinationName"]
+        val Fb = FirebaseFirestore.getInstance().collection("users").get().addOnSuccessListener(object: OnSuccessListener<QuerySnapshot>{
+            override fun onSuccess(documentSnapshots: QuerySnapshot?) {
+                if (documentSnapshots != null) {
+                    if(!documentSnapshots.isEmpty){
+                        for (document in documentSnapshots){
+                            passengerPhoneNumber.text = document["PhoneNumber"].toString()
+                            if(document["isVaccinated"].toString() == "true"){
+                                isVaccinated.text = "vaccinated"
+                            }else{
+                                isVaccinated.text = "not vaccinated"
+                            }
+                        }
+                    }
+
+                }
+            }
+        })
+//
+        Log.d("passengerDetails","${passengerAddress.text}")
+        passengerCard.visibility = View.VISIBLE
     }
 
     override fun onDestroy() {

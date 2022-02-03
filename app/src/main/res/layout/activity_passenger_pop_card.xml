@@ -67,7 +67,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="10dp"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="10dp"
                     android:text="userName"
                     android:textSize="18sp"
                     android:textStyle="bold"
@@ -75,6 +75,17 @@
                     app:layout_constraintHorizontal_bias="1.0"
                     app:layout_constraintStart_toEndOf="@+id/cardView6"
                     app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/rideFare"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="ride fare : ₹50"
+                    android:layout_marginVertical="5dp"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="@+id/passengerName"
+                    app:layout_constraintTop_toBottomOf="@id/passengerName" />
 
                 <TextView
                     android:id="@+id/passengerDestination"
@@ -88,7 +99,7 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.2"
                     app:layout_constraintStart_toEndOf="@+id/cardView6"
-                    app:layout_constraintTop_toBottomOf="@+id/passengerName"
+                    app:layout_constraintTop_toBottomOf="@+id/rideFare"
                     app:layout_constraintVertical_bias="0.0" />
 
                 <LinearLayout

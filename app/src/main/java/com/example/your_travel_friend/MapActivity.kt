@@ -20,19 +20,21 @@ import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContentProviderCompat.requireContext
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.material.slider.Slider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
+import org.w3c.dom.Text
 import java.io.IOException
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.math.roundToInt
 
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
@@ -130,7 +132,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
                         travellingIntent.putExtra("latitude", destinationLatitude!!)
                         travellingIntent.putExtra("longitude", destinationLongitude!!)
                         fusedLocationProviderClient.removeLocationUpdates(locationCallback)
-                        startActivity(travellingIntent)
+                        openFarePopupView(travellingIntent)
                     }
                 } else if (code == 2) {
                     val travellerIntent = Intent(this, Traveller::class.java)
@@ -361,7 +363,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
                 "destLat" to destinationLatitude.toString(),
                 "destLng" to destinationLongitude.toString(),
                 "origin" to origin_address,
-                "destination" to addressTextView.text.toString()
+                "destination" to addressTextView.text.toString(),
+                "fare" to "0"
             )
             ref.setValue(destinationData).addOnSuccessListener {
                 Toast.makeText(this, "added destination data to server", Toast.LENGTH_SHORT).show()
@@ -374,22 +377,50 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
         cameraMoved = true
         Log.d("camera_listener", "onCameraMove: camera moved")
     }
-
+    val fareAmount = 0.0
     @SuppressLint("ClickableViewAccessibility")
     fun openFarePopupView(intent: Intent){
         val inflater = getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
-        val popupView: View = inflater.inflate(R.layout.set_price_layout,this.parent as ViewGroup)
+        val popupView: View = inflater.inflate(R.layout.set_price_layout,null)
         val width = LinearLayout.LayoutParams.WRAP_CONTENT
         val height = LinearLayout.LayoutParams.WRAP_CONTENT
         val focusable = false // lets taps outside the popup also dismiss it
         val view =  mapView.rootView
         val popupWindow = PopupWindow(popupView, width, height, focusable)
         popupWindow.setElevation(20.0f)
+        val rupeeSymbol = popupView.findViewById<TextView>(R.id.rupeeSymbol)
+        val amount = popupView.findViewById<TextView>(R.id.money_text)
+        val sideText = popupView.findViewById<TextView>(R.id.per_text)
+        val slider = popupView.findViewById<Slider>(R.id.fare_slider)
+        val okBtn = popupView.findViewById<Button>(R.id.ok_btn)
+        slider.addOnChangeListener { slider, value, fromUser ->
+            run {
+                if(value != 0.0f){
+                    amount.text = ((value * 10.0).roundToInt() / 10.0).toString()
+                    rupeeSymbol.text = "₹"
+                    sideText.text = "/KM"
+                }else{
+                    amount.text = "free"
+                    rupeeSymbol.text = ""
+                    sideText.text = ""
+                }
+            }
+        }
 
         popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
         popupView.setOnTouchListener { _, _ ->
             popupWindow.dismiss()
             true
+        }
+        okBtn.setOnClickListener {
+            val currentUserId = FirebaseAuth.getInstance().currentUser!!.uid
+            val db = Firebase.database
+            val ref = db.getReference("drivers").child(currentUserId).child("fare")
+            ref.setValue(amount.text).addOnSuccessListener {
+                Log.d("fareChange","travel fare added to ")
+            }
+            startActivity(intent)
+            popupWindow.dismiss()
         }
 
     }

@@ -37,7 +37,7 @@
             app:layout_constraintTop_toBottomOf="@id/header">
 
             <TextView
-                android:id="@+id/moneySymbol"
+                android:id="@+id/rupeeSymbol"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
@@ -45,16 +45,16 @@
                 android:textSize="30sp"/>
 
             <TextView
-                android:id="@+id/fare_text"
+                android:id="@+id/money_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="100"
+                android:text="17.0"
                 android:textSize="25dp"
-                app:layout_constraintBottom_toBottomOf="@+id/moneySymbol"
+                app:layout_constraintBottom_toBottomOf="@+id/rupeeSymbol"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.149"
-                app:layout_constraintStart_toStartOf="@id/moneySymbol"
-                app:layout_constraintTop_toTopOf="@+id/moneySymbol" />
+                app:layout_constraintStart_toStartOf="@id/rupeeSymbol"
+                app:layout_constraintTop_toTopOf="@+id/rupeeSymbol" />
 
             <TextView
                 android:id="@+id/per_text"
@@ -62,9 +62,9 @@
                 android:layout_height="wrap_content"
                 android:text="/Km"
                 android:textSize="25dp"
-                app:layout_constraintBottom_toBottomOf="@+id/fare_text"
-                app:layout_constraintStart_toEndOf="@id/fare_text"
-                app:layout_constraintTop_toTopOf="@+id/fare_text" />
+                app:layout_constraintBottom_toBottomOf="@+id/money_text"
+                app:layout_constraintStart_toEndOf="@id/money_text"
+                app:layout_constraintTop_toTopOf="@+id/money_text"/>
         </LinearLayout>
 
 
@@ -72,11 +72,16 @@
             android:id="@+id/fare_slider"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:valueFrom="0"
+            android:valueTo="20"
+            android:value="17"
+            app:labelBehavior="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textContainer" />
 
         <Button
+            android:id="@+id/ok_btn"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="ok"

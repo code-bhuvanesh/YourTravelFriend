@@ -14,4 +14,139 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="15dp"
+        app:cardCornerRadius="10dp"
+        app:layout_constraintBottom_toTopOf="@+id/driver_details"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="5 min" />
+    </androidx.cardview.widget.CardView>
+
+
+    <LinearLayout
+        android:id="@+id/driver_details"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:orientation="vertical"
+        android:backgroundTint="#E8E3E3"
+        android:background="@drawable/navigation_drawer"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="#E8E3E3"
+            app:cardCornerRadius="20dp"
+            android:layout_margin="20dp">
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:id="@+id/driver_img"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:src="@drawable/user_logo"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/driver_username"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="10dp"
+                    android:text="bhuvanesh deavaraj"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="@id/driver_img"
+                    app:layout_constraintEnd_toStartOf="@+id/linearLayout2"
+                    app:layout_constraintStart_toEndOf="@id/driver_img"
+                    app:layout_constraintTop_toTopOf="@+id/driver_img" />
+                <TextView
+                    android:id="@+id/driver_phone_number"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="phone number"
+                    android:textSize="20sp"
+                    app:layout_constraintStart_toStartOf="@id/driver_username"
+                    app:layout_constraintTop_toBottomOf="@id/driver_username"/>
+
+                <LinearLayout
+                    android:id="@+id/linearLayout2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:gravity="center"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <ImageView
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:src="@drawable/rating_logo" />
+
+                    <TextView
+                        android:id="@+id/driverRating"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="5dp"
+                        android:text="4.3(54)" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/is_vaccinated_driver"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="vaccinated"
+                    android:textSize="16sp"
+                    android:layout_marginTop="5dp"
+                    app:layout_constraintEnd_toEndOf="@id/driver_phone_number"
+                    app:layout_constraintStart_toStartOf="@id/driver_phone_number"
+                    app:layout_constraintTop_toBottomOf="@id/driver_phone_number" />
+
+                <TextView
+                    android:id="@+id/driver_licencePlate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="license plate"
+                    android:layout_marginVertical="5dp"
+                    app:layout_constraintStart_toStartOf="@+id/is_vaccinated_driver"
+                    app:layout_constraintTop_toBottomOf="@+id/is_vaccinated_driver" />
+                <TextView
+                    android:id="@+id/vehicle_model"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="vehicle model"
+                    android:layout_marginVertical="5dp"
+                    app:layout_constraintStart_toStartOf="@+id/driver_licencePlate"
+                    app:layout_constraintTop_toBottomOf="@+id/driver_licencePlate" />
+
+                <TextView
+                    android:id="@+id/my_ridefare"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="28dp"
+                    android:text="₹"
+                    android:textStyle="bold"
+                    android:textSize="40sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/linearLayout2"
+                    app:layout_constraintVertical_bias="0.524" />
+
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
