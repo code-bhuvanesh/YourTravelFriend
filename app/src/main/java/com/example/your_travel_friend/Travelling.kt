@@ -3,6 +3,7 @@ package com.example.your_travel_friend
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -30,6 +31,7 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.ktx.Firebase
+import com.google.maps.android.SphericalUtil
 
 
 class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
@@ -42,7 +44,7 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
     private var travellingDistance = ""
 
     private var origin_lat = 0.0
-    private var orign_lng = 0.0
+    private var origin_lng = 0.0
     private var currentPolyline: Polyline? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,7 +64,8 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
         mapView.getMapAsync(this)
 
     }
-
+    var destinationLatitude: Double? = null
+    var destinationLongitude: Double? = null
     override fun onMapReady(googleMap: GoogleMap) {
         mapView.onResume()
         map = googleMap
@@ -81,10 +84,10 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient((this))
 
         getCurrentLocation()
-        val destinationLatitude = intent.extras!!.getDouble("latitude")
-        val destinationLongitude = intent.extras!!.getDouble("longitude")
+        destinationLatitude = intent.extras!!.getDouble("latitude")
+        destinationLongitude = intent.extras!!.getDouble("longitude")
 
-        val dest_latLng = LatLng(destinationLatitude, destinationLongitude)
+        val dest_latLng = LatLng(destinationLatitude!!, destinationLongitude!!)
 
         val destinationMarker = MarkerOptions()
             .position(dest_latLng)
@@ -92,7 +95,7 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
         map.addMarker(destinationMarker)
         getrequestFromFirebase()
         getMyLocation()
-        val url = getUrl(LatLng(origin_lat, orign_lng), dest_latLng, "driving")
+//        val url = getUrl(LatLng(origin_lat, origin_lng), dest_latLng, "driving")
         val resultDistance = FloatArray(10)
 
     }
@@ -117,10 +120,19 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
         vectorDrawable.draw(canvas)
         return BitmapDescriptorFactory.fromBitmap(bitmap)
     }
+    val dataBase = FirebaseDatabase.getInstance()
+    val currentUserId = FirebaseAuth.getInstance().currentUser!!.uid
+
+    var passengerDestlat:Double? = null
+    var passengerDestLng:Double? = null
+
+    var myLatlng: LatLng? = null
+    var passengerDestLatLng: LatLng? = null
+    var showEnTripBtn = false
 
     fun getMyLocation(){
-        val rb = FirebaseDatabase.getInstance().getReference("drivers")
-            .child(FirebaseAuth.getInstance().currentUser!!.uid)
+        val rb = dataBase.getReference("drivers")
+            .child(currentUserId)
         val locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 locationResult ?: return
@@ -128,9 +140,39 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
 //                    moveCamera(LatLng(location.latitude,location.longitude), defaultZoom)
                     Log.d("locationChanged","my location is changed")
                     origin_lat = location.latitude
-                    orign_lng = location.longitude
+                    origin_lng = location.longitude
+                    myLatlng = LatLng(origin_lat,origin_lng)
                     rb.child("originLat").setValue(origin_lat.toString())
-                    rb.child("originLng").setValue(orign_lng.toString())
+                    rb.child("originLng").setValue(origin_lng.toString())
+                    if(passengerData.isNotEmpty()){
+                        passengerDestlat = passengerData["destLat"]!!.toDouble()
+                        passengerDestLng = passengerData["destLng"]!!.toDouble()
+                        passengerDestLatLng = LatLng(passengerDestlat!!,passengerDestLng!!)
+                        val remainDistance = SphericalUtil.computeDistanceBetween(passengerDestLatLng,myLatlng)
+                        showEnTripBtn = remainDistance < 500.0
+                        Log.d("checkingEndRide","reminDistace = $remainDistance, show = $showEnTripBtn")
+                        dataBase.getReference("OngoingRide").child(currentUserId).child("remainingDistance").setValue(remainDistance)
+                        if(showEnTripBtn){
+                            dataBase.getReference("OngoingRide").child(currentUserId).child("rideStarted").get().addOnSuccessListener {
+                                Log.d("checkingEndRide", "onDataChange: showing ride is : ${it.value.toString()}")
+                                if(it.value.toString().toBoolean()){
+                                    Log.d("checkingEndRide", "onDataChange: showing ride")
+                                    val endTripBtn = findViewById<Button>(R.id.endTripBtn)
+                                    endTripBtn.visibility = View.VISIBLE
+                                    if(showEnTripBtn){
+                                        endTripBtn.setOnClickListener {
+                                            endTripBtn.visibility = View.GONE
+                                            ratePassenger()
+                                        }
+                                    }else{
+                                        endTripBtn.visibility = View.GONE
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+
                 }
                 super.onLocationResult(locationResult)
             }
@@ -154,6 +196,71 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
                 locationCallback,
                 Looper.getMainLooper()
             )
+        }
+
+    }
+
+    val db = FirebaseFirestore.getInstance()
+    val documentReference = db.collection("users")
+    private fun startRide(){
+        var remiangDis = ""
+        if(myLatlng != null && passengerDestLatLng != null){
+
+            remiangDis = SphericalUtil.computeDistanceBetween(myLatlng,passengerDestLatLng).toString()
+        }
+        val ongoingRide = hashMapOf<String,String>(
+            "driverId" to currentUserId,
+            "passengerId" to passengerData["passengerId"].toString(),
+            "DOriginLat" to origin_lat.toString(),
+            "DOriginLng" to origin_lng.toString(),
+            "PassengerDestLat" to passengerDestlat.toString(),
+            "PassengerDestLng" to passengerDestLng.toString(),
+            "rideFare" to passengerData["rideFare"].toString(),
+            "remainingDistance" to remiangDis,
+            "rideStarted" to "false",
+            "rideEnded" to "false"
+        )
+        dataBase.getReference("OngoingRide").child(currentUserId).setValue(ongoingRide)
+
+    }
+
+    private fun ratePassenger(){
+        val inflater = getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        val popupView: View = inflater.inflate(R.layout.rating_layout, null)
+        val width = LinearLayout.LayoutParams.WRAP_CONTENT
+        val height = LinearLayout.LayoutParams.WRAP_CONTENT
+        val focusable = true
+        FirebaseDatabase.getInstance().getReference("OngoingRide").child(currentUserId).child("rideEnded").setValue("true")
+        val view =  mapView.rootView
+        val popupWindow = PopupWindow(popupView, width, height, focusable)
+        popupWindow.setElevation(20.0f)
+        var passengerRating = 0.0
+        popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
+        val rating = popupView.findViewById<RatingBar>(R.id.ratingLayout)
+        val rideFare = popupView.findViewById<TextView>(R.id.rideFareTextPop)
+        val okBtn = popupView.findViewById<Button>(R.id.review_ok_btn)
+        rideFare.text = "Ride Fare : ${passengerData["rideFare"].toString()}"
+        var pCurrentRewards = 0.0
+        var driversRated = 0
+        val docRef = documentReference.document(passengerData["passengerId"].toString())
+        okBtn.setOnClickListener {
+              docRef.get().addOnSuccessListener {
+                  if(it.exists()){
+                      Log.d("Ratting","current passenger rewards: ${(it["passengerRewards"].toString())}")
+                      pCurrentRewards = (it["passengerRewards"].toString()).toDouble()
+                      driversRated = (it["driversRated"].toString()).toInt()
+                      docRef.update("passengerRewards",(pCurrentRewards+rating.rating).toString())
+                      docRef.update("passengerRatting",((pCurrentRewards+rating.rating)/(driversRated+1)).toString())
+                      docRef.update("driversRated",(driversRated+1).toString())
+                      Log.d("Ratting","updated passenger rewards: ${pCurrentRewards+rating.rating}")
+
+                  }
+              }
+
+            val intent = Intent(this, MainActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            startActivity(intent)
+            popupWindow.dismiss()
         }
 
     }
@@ -192,7 +299,6 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
     private fun moveCamera(latLng: LatLng, zoom: Float) {
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom))
     }
-
 
     private fun getUrl(origin: LatLng, dest: LatLng, directionMode: String): String? {
         // Origin of route
@@ -279,7 +385,11 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
                 Log.d("ride","accepted")
                 db.setValue(passengerData)
                 setPassengerLocation(passengerData)
+                dataBase.getReference("drivers").child(currentUserId).removeValue().addOnSuccessListener {
+                    Log.d("remove driver","successful")
+                }
                 setPassengerDetails(passengerData["rideFare"].toString())
+                startRide()
                 popupWindow.dismiss()
             }
             popupView.findViewById<Button>(R.id.passengerDecline).setOnClickListener {

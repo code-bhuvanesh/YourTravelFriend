@@ -2,4 +2,6 @@
     <string name="app_name">YourTravelFriend</string>
     <string name="title_activity_maps">MapsActivity</string>
     <string name="web_client_id2">206577416137-n9r5g71uup3e9p73r9ur66tluleqpm7v.apps.googleusercontent.com</string>
+    <string name="nav_open">Open</string>
+    <string name="nav_close">Close</string>
 </resources>

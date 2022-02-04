@@ -30,6 +30,17 @@
             android:text="5 min" />
     </androidx.cardview.widget.CardView>
 
+    <Button
+        android:id="@+id/rideStartedBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="confirm ride started"
+        android:layout_margin="10dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/driver_details"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
 
     <LinearLayout
         android:id="@+id/driver_details"

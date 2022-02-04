@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.location.Location
 import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
@@ -27,8 +28,6 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.OnSuccessListener
-import com.google.android.material.slider.Slider
-import com.google.api.LogDescriptor
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -37,8 +36,7 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
-import org.w3c.dom.Text
-import kotlin.math.roundToInt
+import com.google.maps.android.SphericalUtil
 
 
 class RideAccepted : AppCompatActivity(), OnMapReadyCallback {
@@ -53,6 +51,7 @@ class RideAccepted : AppCompatActivity(), OnMapReadyCallback {
     private var driverId = ""
     private var arivalTime = ""
     private var rideFare = ""
+    private lateinit var rideStartedBtn: Button
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_ride_accepted)
@@ -61,6 +60,7 @@ class RideAccepted : AppCompatActivity(), OnMapReadyCallback {
         mapView = findViewById(R.id.rideMapView)
         driverId
         var mapViewBundle: Bundle? = null
+        rideStartedBtn = findViewById(R.id.rideStartedBtn)
         driverId = intent.extras?.getString("driverId").toString()
         rideFare = intent.extras?.getString("rideFare").toString()
         arivalTime = intent.extras?.getString("arrivalTime").toString()
@@ -95,11 +95,12 @@ class RideAccepted : AppCompatActivity(), OnMapReadyCallback {
 
         getCurrentLocation()
         getrequestFromFirebase()
+        checkForEndTrip()
 
         val resultDistance = FloatArray(10)
 
     }
-
+    var currentLocation: Location? = null
     @SuppressLint("MissingPermission")
     private fun getCurrentLocation() {
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient((this))
@@ -108,10 +109,10 @@ class RideAccepted : AppCompatActivity(), OnMapReadyCallback {
             location.addOnCompleteListener { loc ->
                 run {
                     try {
-                        val currentLocation = loc.result
+                        currentLocation = loc.result
                         if (currentLocation != null) {
                             moveCamera(
-                                LatLng(currentLocation.latitude, currentLocation.longitude),
+                                LatLng(currentLocation!!.latitude, currentLocation!!.longitude),
                                 defaultZoom
                             )
                         } else {
@@ -157,6 +158,7 @@ class RideAccepted : AppCompatActivity(), OnMapReadyCallback {
         val ref = db.getReference("drivers").child(driverId)
         ref.addValueEventListener(childEventListener)
     }
+
     var driverMarker: MarkerOptions? = null
     private fun setDriverLocation(driverLatitude: Double,driverLongitude: Double) {
 
@@ -191,17 +193,44 @@ class RideAccepted : AppCompatActivity(), OnMapReadyCallback {
         vectorDrawable.draw(canvas)
         return BitmapDescriptorFactory.fromBitmap(bitmap)
     }
-
+    var rideStarted = false
     private fun driverLiveLocation() {
         val db = FirebaseFirestore.getInstance()
-        val rb = FirebaseDatabase.getInstance().getReference("drivers")
+        val rb = FirebaseDatabase.getInstance().getReference("OngoingRide")
             .child(driverId)
         val childEventListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 try {
-                    var driverLatitude = snapshot.child("originLat").value.toString().toDouble()
-                    var driverLongitude = snapshot.child("originLng").value.toString().toDouble()
+                    var driverLatitude = snapshot.child("DOriginLat").value.toString().toDouble()
+                    var driverLongitude = snapshot.child("DOriginLng").value.toString().toDouble()
                     setDriverLocation(driverLatitude,driverLongitude)
+                    if(currentLocation != null){
+                        Log.d("checkCurrentLocation", "onDataChange: currentLocation: ${currentLocation!!.latitude}, ${currentLocation!!.longitude}")
+                        val myLatLng = LatLng(currentLocation!!.latitude,currentLocation!!.longitude)
+                        val dLatLng = LatLng(driverLatitude,driverLongitude)
+                        val disDP = SphericalUtil.computeDistanceBetween(myLatLng,dLatLng)
+                        if(disDP < 500){
+                            if(!rideStarted){
+                                rideStartedBtn.visibility = View.VISIBLE
+                                rideStartedBtn.setOnClickListener {
+                                    FirebaseDatabase.getInstance().getReference("OngoingRide").child(driverId).child("rideStarted").get().addOnSuccessListener {
+                                        Log.d("setRideStarted", "setRideStartedTrue: ride stated is ${it.value}")
+
+                                    }
+                                    FirebaseDatabase.getInstance().getReference("OngoingRide").child(driverId).child("rideStarted").setValue("true").addOnSuccessListener {
+                                        Log.d("setRideStarted", "setRideStartedTrue: ride stated is true")
+                                        rideStarted = true
+                                        FirebaseDatabase.getInstance().getReference("OngoingRide").child(driverId).child("rideStarted").get().addOnSuccessListener {
+                                            Log.d("setRideStarted", "setRideStartedTrue: ride stated is ${it.value}")
+                                        }
+                                        rideStartedBtn.visibility = View.GONE
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
@@ -214,51 +243,6 @@ class RideAccepted : AppCompatActivity(), OnMapReadyCallback {
         rb.addValueEventListener(childEventListener)
     }
 
-    fun openFarePopupView(intent: Intent){
-        val inflater = getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
-        val popupView: View = inflater.inflate(R.layout.set_price_layout,null)
-        val width = LinearLayout.LayoutParams.WRAP_CONTENT
-        val height = LinearLayout.LayoutParams.WRAP_CONTENT
-        val focusable = false // lets taps outside the popup also dismiss it
-        val view =  mapView.rootView
-        val popupWindow = PopupWindow(popupView, width, height, focusable)
-        popupWindow.setElevation(20.0f)
-        val rupeeSymbol = popupView.findViewById<TextView>(R.id.rupeeSymbol)
-        val amount = popupView.findViewById<TextView>(R.id.money_text)
-        val sideText = popupView.findViewById<TextView>(R.id.per_text)
-        val slider = popupView.findViewById<Slider>(R.id.fare_slider)
-        val okBtn = popupView.findViewById<Button>(R.id.ok_btn)
-        slider.addOnChangeListener { slider, value, fromUser ->
-            run {
-                if(value != 0.0f){
-                    amount.text = ((value * 10.0).roundToInt() / 10.0).toString()
-                    rupeeSymbol.text = "₹"
-                    sideText.text = "/KM"
-                }else{
-                    amount.text = "free"
-                    rupeeSymbol.text = ""
-                    sideText.text = ""
-                }
-            }
-        }
-
-        popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
-        popupView.setOnTouchListener { _, _ ->
-            popupWindow.dismiss()
-            true
-        }
-        okBtn.setOnClickListener {
-            val currentUserId = FirebaseAuth.getInstance().currentUser!!.uid
-            val db = Firebase.database
-            val ref = db.getReference("drivers").child(currentUserId).child("fare")
-            ref.setValue(amount.text).addOnSuccessListener {
-                Log.d("fareChange","travel fare added to ")
-            }
-            startActivity(intent)
-            popupWindow.dismiss()
-        }
-
-    }
     fun setDriverDetails(){
         val driverCard = findViewById<LinearLayout>(R.id.driver_details)
         val driverName = findViewById<TextView>(R.id.driver_username)
@@ -285,5 +269,75 @@ class RideAccepted : AppCompatActivity(), OnMapReadyCallback {
                     vehicleModel.text = document["vehicleModel"].toString()
                 }
             })
+    }
+
+
+    fun checkForEndTrip(){
+        val rb = FirebaseDatabase.getInstance().getReference("OngoingRide").child(driverId)
+        Log.d("rateDriver","sdfhkl")
+        rb.child("rideEnded").addValueEventListener(
+            object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if(snapshot.exists()){
+                        if(snapshot.value.toString().toBoolean()){
+                            rateDriver()
+                        }else{
+                            Log.d("rateDriver","false")
+                        }
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    TODO("Not yet implemented")
+                }
+            }
+        )
+    }
+
+    private fun rateDriver(){
+        val inflater = getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        val popupView: View = inflater.inflate(R.layout.rating_layout, null)
+        val width = LinearLayout.LayoutParams.WRAP_CONTENT
+        val height = LinearLayout.LayoutParams.WRAP_CONTENT
+        val focusable = true
+        val view =  mapView.rootView
+        val popupWindow = PopupWindow(popupView, width, height, focusable)
+        popupWindow.setElevation(20.0f)
+        var passengerRating = 0.0
+        try {
+            popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0)
+            popupView.findViewById<TextView>(R.id.rateYourText).text = "rate your driver"
+            val rating = popupView.findViewById<RatingBar>(R.id.ratingLayout)
+            val rideFareText = popupView.findViewById<TextView>(R.id.rideFareTextPop)
+            val okBtn = popupView.findViewById<Button>(R.id.review_ok_btn)
+            val db = FirebaseFirestore.getInstance()
+            val documentReference = db.collection("users").document(driverId)
+            rideFareText.text = "Ride Fare : $rideFare"
+            var dCurrentRewards = 0.0
+            var passengersRated = 0
+            okBtn.setOnClickListener {
+                documentReference.get().addOnSuccessListener {
+                    if(it.exists()){
+                        dCurrentRewards = (it["driverRewards"].toString()).toDouble()
+                        passengersRated = (it["passengerRated"].toString()).toInt()
+                        Log.d("Ratting","current passenger rewards: $dCurrentRewards")
+                        FirebaseDatabase.getInstance().getReference("OngoingRide").child(driverId).child("rideEnded").setValue("true")
+                        documentReference.update("driverRewards",(dCurrentRewards+rating.rating).toString())
+                        documentReference.update("driverRating",((dCurrentRewards+rating.rating)/(passengersRated+1)).toString())
+                        documentReference.update("passengerRated",(passengersRated+1).toString())
+                        Log.d("Ratting","updated passenger rewards: ${dCurrentRewards+rating.rating}")
+
+                    }
+                }
+
+                val intent = Intent(this, MainActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                startActivity(intent)
+                popupWindow.dismiss()
+            }
+
+        }catch(e: Exception){
+            e.printStackTrace()
+        }
     }
 }

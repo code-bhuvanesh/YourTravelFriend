@@ -83,7 +83,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
 
         val locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
-                locationResult ?: return
+//                locationResult ?: return
                 for (location in locationResult.locations){
                     //moveCamera(LatLng(location.latitude,location.longitude), defaultZoom)
                     Log.d("locationChanged","my location is changed")
@@ -389,6 +389,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
         val popupWindow = PopupWindow(popupView, width, height, focusable)
         popupWindow.setElevation(20.0f)
         val rupeeSymbol = popupView.findViewById<TextView>(R.id.rupeeSymbol)
+        var fareAmount = 17.0
         val amount = popupView.findViewById<TextView>(R.id.money_text)
         val sideText = popupView.findViewById<TextView>(R.id.per_text)
         val slider = popupView.findViewById<Slider>(R.id.fare_slider)
@@ -396,7 +397,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
         slider.addOnChangeListener { slider, value, fromUser ->
             run {
                 if(value != 0.0f){
-                    amount.text = ((value * 10.0).roundToInt() / 10.0).toString()
+                    fareAmount = ((value * 10.0).roundToInt() / 10.0)
+                    amount.text = fareAmount.toString()
                     rupeeSymbol.text = "₹"
                     sideText.text = "/KM"
                 }else{
@@ -416,7 +418,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
             val currentUserId = FirebaseAuth.getInstance().currentUser!!.uid
             val db = Firebase.database
             val ref = db.getReference("drivers").child(currentUserId).child("fare")
-            ref.setValue(amount.text).addOnSuccessListener {
+            ref.setValue(fareAmount.toString()).addOnSuccessListener {
                 Log.d("fareChange","travel fare added to ")
             }
             startActivity(intent)

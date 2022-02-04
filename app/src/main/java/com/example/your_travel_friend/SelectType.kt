@@ -2,8 +2,13 @@ package com.example.your_travel_friend
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.MenuItem
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
+import androidx.drawerlayout.widget.DrawerLayout
+import com.google.firebase.auth.FirebaseAuth
+
 
 class SelectType : AppCompatActivity() {
 
@@ -13,12 +18,23 @@ class SelectType : AppCompatActivity() {
     lateinit var traveller: CardView
     lateinit var travelling: CardView
 
+    lateinit var drawerLayout: DrawerLayout
+    lateinit var actionBarDrawerToggle: ActionBarDrawerToggle
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_select_type)
 
         travelling = findViewById(R.id.havingVehicle)
         traveller = findViewById(R.id.notHavingVehicle)
+
+        drawerLayout = findViewById(R.id.my_drawer_layout)
+        actionBarDrawerToggle = ActionBarDrawerToggle(this,drawerLayout,R.string.nav_open,R.string.nav_close)
+        drawerLayout.addDrawerListener(actionBarDrawerToggle);
+        actionBarDrawerToggle.syncState();
+
+        // to make the Navigation drawer icon always appear on the action bar
+        getSupportActionBar()?.setDisplayHomeAsUpEnabled(true);
 
         travelling.setOnClickListener {
             val intent = Intent(this, MapActivity::class.java)
@@ -36,37 +52,60 @@ class SelectType : AppCompatActivity() {
 
 
     }
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.nav_profile -> {
+                openProfile()
+                true
+            }
+            R.id.nav_store-> {
+                openStore()
+                true
+            }
+            R.id.nav_reviews-> {
+                openReviews()
+                true
+            }
+            R.id.nav_settings-> {
+                openSettings()
+                true
+            }
+            R.id.nav_about-> {
+                openAboutPage()
+                true
+            }
+            R.id.nav_logout-> {
+                logout()
+                true
+            }
 
-//    private val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-//        if (result.resultCode == TRAVELLER_CODE) {
-//            // There are no request codes
-//            val data: Intent? = result.data
-//            val destination: String? = data?.extras?.get("destination").toString()
-//            if(destination != null){
-//                Log.d("confirm_destination", "onCreate: destination : $destination")
-//                val travellerIntent = Intent(this,Traveller::class.java)
-//                startActivity(travellerIntent)
-//            }else{
-//                Log.d("confirm_destination", "onCreate: destination : destination is null")
-//
-//            }
-//        }
-//        if (result.resultCode == TRAVELLING_CODE) {
-//            // There are no request codes
-//            val data: Intent? = result.data
-//
-//            if (data != null) {
-//                val destination: String = data.extras?.get("destination").toString()
-//                val destinationLatitude: Double = data.extras?.get("latitude") as Double
-//                val destinationLongitude: Double = data.extras?.get("longitude") as Double
-//                Log.d("confirm_destination", "onCreate: destination : $destination")
-//                val travellerIntent = Intent(this,Travelling::class.java)
-//                travellerIntent.putExtra("latitude", destinationLatitude)
-//                travellerIntent.putExtra("longitude", destinationLongitude)
-//                startActivity(travellerIntent)
-//            }
-//        }
-//    }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun logout() {
+        FirebaseAuth.getInstance().signOut()
+    }
+
+    private fun openAboutPage() {
+        val aboutIntent = Intent()
+    }
+
+    private fun openSettings() {
+        TODO("Not yet implemented")
+    }
+
+    private fun openReviews() {
+        TODO("Not yet implemented")
+    }
+
+    private fun openStore() {
+        TODO("Not yet implemented")
+    }
+
+    private fun openProfile() {
+        TODO("Not yet implemented")
+    }
 
 
 }

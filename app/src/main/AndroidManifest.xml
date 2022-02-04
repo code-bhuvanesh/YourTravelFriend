@@ -16,12 +16,29 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.YourTravelFriend">
         <activity
+            android:name=".menuActivities.AboutActivity"
+            android:exported="false" />
+        <activity
+            android:name=".menuActivities.SettingsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".menuActivities.BookRideActivity"
+            android:exported="false" />
+        <activity
+            android:name=".menuActivities.myReviewsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".menuActivities.StoreActivity"
+            android:exported="false" />
+        <activity
+            android:name=".menuActivities.MyProfileActivity"
+            android:exported="false" />
+        <activity
             android:name=".RideAccepted"
             android:exported="false" />
         <activity
             android:name=".PassengerPopCard"
             android:exported="false" />
-
         <activity
             android:name=".ProfileActivity"
             android:exported="false" />
@@ -54,7 +71,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
     </application>
 
 </manifest>

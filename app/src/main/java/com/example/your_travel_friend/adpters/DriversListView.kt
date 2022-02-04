@@ -65,6 +65,7 @@ class DriversListView(val context: Activity, val destinationName: String,val use
                     Log.d("farePrice", "getView: ride fare = $totalRideFare, ${myDistance/1000}")
                     farePrice.text = "₹$totalRideFare"
                 }else{
+                    totalRideFare = "0.0"
                     farePrice.text = "free"
                 }
             }
