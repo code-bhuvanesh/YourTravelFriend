@@ -96,6 +96,7 @@ class Traveller : AppCompatActivity() {
                                                                             vehicleModel,
                                                                             isVaccinated
                                                                         )
+//                                                                        driverRating = (doc.get("vehicleModel") as String).toBoolean()
                                                                         driversList.add(driverData)
                                                                         Log.d(
                                                                             "driver_data",

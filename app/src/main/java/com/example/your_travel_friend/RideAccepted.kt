@@ -318,14 +318,19 @@ class RideAccepted : AppCompatActivity(), OnMapReadyCallback {
             okBtn.setOnClickListener {
                 documentReference.get().addOnSuccessListener {
                     if(it.exists()){
-                        dCurrentRewards = (it["driverRewards"].toString()).toDouble()
-                        passengersRated = (it["passengerRated"].toString()).toInt()
-                        Log.d("Ratting","current passenger rewards: $dCurrentRewards")
-                        FirebaseDatabase.getInstance().getReference("OngoingRide").child(driverId).child("rideEnded").setValue("true")
-                        documentReference.update("driverRewards",(dCurrentRewards+rating.rating).toString())
-                        documentReference.update("driverRating",((dCurrentRewards+rating.rating)/(passengersRated+1)).toString())
-                        documentReference.update("passengerRated",(passengersRated+1).toString())
-                        Log.d("Ratting","updated passenger rewards: ${dCurrentRewards+rating.rating}")
+                        try{
+
+                            dCurrentRewards = (it["driverRewards"].toString()).toDouble()
+                            passengersRated = (it["passengerRated"].toString()).toInt()
+                            Log.d("Ratting","current passenger rewards: $dCurrentRewards")
+                            FirebaseDatabase.getInstance().getReference("OngoingRide").child(driverId).child("rideEnded").setValue("true")
+                            documentReference.update("driverRewards",(dCurrentRewards+rating.rating).toString())
+                            documentReference.update("driverRating",((dCurrentRewards+rating.rating)/(passengersRated+1)).toString())
+                            documentReference.update("passengerRated",(passengersRated+1).toString())
+                            Log.d("Ratting","updated passenger rewards: ${dCurrentRewards+rating.rating}")
+                        }catch (e: Exception){
+                            e.printStackTrace()
+                        }
 
                     }
                 }

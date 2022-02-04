@@ -10,7 +10,7 @@
         <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/drawable/navigation_drawer.xml" value="0.253" />
         <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/drawable/profile_gradient.xml" value="0.194" />
         <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/activity_about.xml" value="0.2669138090824838" />
-        <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/activity_book_ride.xml" value="0.2669138090824838" />
+        <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/activity_book_ride.xml" value="0.33" />
         <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/activity_main.xml" value="0.3625" />
         <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/activity_map.xml" value="0.22" />
         <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/activity_maps.xml" value="0.33" />
@@ -23,7 +23,7 @@
         <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/activity_serach_for_vehicle.xml" value="0.28957365977205574" />
         <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/activity_settings.xml" value="0.2669138090824838" />
         <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/activity_sign_in.xml" value="0.25" />
-        <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/activity_store.xml" value="0.33" />
+        <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/activity_store.xml" value="0.22" />
         <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/activity_traveller.xml" value="0.2" />
         <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/activity_travelling.xml" value="0.33" />
         <entry key="..\:/Android_Studio_Projects/YourTravelFriend/app/src/main/res/layout/activity_travelling2.xml" value="0.28489583333333335" />
@@ -36,7 +36,7 @@
       </map>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_16" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_X" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">

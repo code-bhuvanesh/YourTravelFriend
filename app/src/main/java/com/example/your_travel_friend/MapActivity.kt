@@ -20,6 +20,7 @@ import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import com.example.your_travel_friend.menuActivities.BookRideActivity
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -136,6 +137,18 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
                     }
                 } else if (code == 2) {
                     val travellerIntent = Intent(this, Traveller::class.java)
+                    travellerIntent.putExtra("destination", addressTextView.text)
+                    if (destinationLatitude != null && destinationLongitude != null) {
+                        travellerIntent.putExtra("latitude", destinationLatitude!!)
+                        travellerIntent.putExtra("longitude", destinationLongitude!!)
+                        travellerIntent.putExtra("myLatitude", origin_lat)
+                        travellerIntent.putExtra("myLongitude", origin_lng)
+                        travellerIntent.putExtra("destination", destinationName)
+                        fusedLocationProviderClient.removeLocationUpdates(locationCallback)
+                        startActivity(travellerIntent)
+                    }
+                }else if (code == 3) {
+                    val travellerIntent = Intent(this, BookRideActivity::class.java)
                     travellerIntent.putExtra("destination", addressTextView.text)
                     if (destinationLatitude != null && destinationLongitude != null) {
                         travellerIntent.putExtra("latitude", destinationLatitude!!)
@@ -301,16 +314,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
         Log.d("locationChanged","location is changed lat: ${locations[0].latitude}, longitude: ${locations[0].longitude}")
 
     }
-    //    override fun onLocationChanged(location: Location) {
-//        Log.d("set_address", "location changed")
-//        val geocoder = Geocoder(this, Locale.getDefault())
-//        var addresses: List<Address>? = null
-//        try {
-//            addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
-//        } catch (e: Exception) {
-//        }
-////        setAddress(addresses!![0])
-//    }
 
 
     private fun setAddress(address: Address) {

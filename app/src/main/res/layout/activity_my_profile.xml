@@ -105,7 +105,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="5dp"
-                        android:text="username"
+                        android:text=""
                         android:textSize="16sp" />
                 </LinearLayout>
             </LinearLayout>
@@ -139,7 +139,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="5dp"
-                        android:text="7010351931"
+                        android:text=""
                         android:textSize="16sp" />
                 </LinearLayout>
             </LinearLayout>
@@ -173,7 +173,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="5dp"
-                        android:text="TN 56 HU 8893"
+                        android:text=""
                         android:textSize="16sp" />
                 </LinearLayout>
             </LinearLayout>
@@ -207,7 +207,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="5dp"
-                        android:text="hundai"
+                        android:text=""
                         android:textSize="16sp" />
                 </LinearLayout>
             </LinearLayout>
@@ -240,7 +240,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="5dp"
-                        android:text="5"
+                        android:text=""
                         android:textSize="16sp" />
                 </LinearLayout>
             </LinearLayout>
@@ -273,7 +273,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="5dp"
-                        android:text="2"
+                        android:text=""
                         android:textSize="16sp" />
                 </LinearLayout>
             </LinearLayout>
@@ -307,7 +307,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="5dp"
-                        android:text="vaccinated"
+                        android:text=""
                         android:textSize="16sp" />
                 </LinearLayout>
             </LinearLayout>

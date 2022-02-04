@@ -3,11 +3,13 @@ package com.example.your_travel_friend
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
+import android.widget.Button
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.drawerlayout.widget.DrawerLayout
 import com.example.your_travel_friend.menuActivities.*
+import com.example.your_travel_friend.pushNotifications.SendNotification
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
@@ -30,6 +32,7 @@ class SelectType : AppCompatActivity() {
 
         travelling = findViewById(R.id.havingVehicle)
         traveller = findViewById(R.id.notHavingVehicle)
+
 
         drawerLayout = findViewById(R.id.my_drawer_layout)
         actionBarDrawerToggle = ActionBarDrawerToggle(this,drawerLayout,R.string.nav_open,R.string.nav_close)
@@ -74,6 +77,9 @@ class SelectType : AppCompatActivity() {
                 R.id.nav_store-> {
                     openStore()
                 }
+                R.id.nav_Book ->{
+                    BookYourRide()
+                }
                 R.id.nav_reviews-> {
                     openReviews()
                 }
@@ -92,7 +98,11 @@ class SelectType : AppCompatActivity() {
 
     }
 
-
+    private fun BookYourRide(){
+        val intent = Intent(this, MapActivity::class.java)
+        intent.putExtra("code", 3)
+        startActivity(intent)
+    }
     private fun logout() {
         FirebaseAuth.getInstance().signOut()
     }

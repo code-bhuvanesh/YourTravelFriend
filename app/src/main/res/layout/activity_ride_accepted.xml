@@ -76,7 +76,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="10dp"
-                    android:text="bhuvanesh deavaraj"
+                    android:text=""
                     android:textSize="20sp"
                     android:textStyle="bold"
                     app:layout_constraintBottom_toBottomOf="@id/driver_img"
@@ -87,7 +87,7 @@
                     android:id="@+id/driver_phone_number"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="phone number"
+                    android:text=""
                     android:textSize="20sp"
                     app:layout_constraintStart_toStartOf="@id/driver_username"
                     app:layout_constraintTop_toBottomOf="@id/driver_username"/>

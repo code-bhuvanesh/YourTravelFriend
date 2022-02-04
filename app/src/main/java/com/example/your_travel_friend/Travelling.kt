@@ -7,6 +7,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.icu.util.Calendar
+import android.os.Build
 import android.os.Bundle
 import android.os.Looper
 import android.util.Log
@@ -14,10 +16,12 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.*
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.your_travel_friend.directionHelpers.TaskLoadedCallback
+import com.example.your_travel_friend.pushNotifications.SendNotification
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -36,16 +40,20 @@ import com.google.maps.android.SphericalUtil
 
 class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
     private lateinit var mapView: MapView
-
     private lateinit var map: GoogleMap
     private var MAP_VIEW_BUNDLE_KEY = "mapViewBundleKey"
+
     private val defaultZoom = 16f
     private var fusedLocationProviderClient: FusedLocationProviderClient? = null
     private var travellingDistance = ""
-
     private var origin_lat = 0.0
     private var origin_lng = 0.0
+
     private var currentPolyline: Polyline? = null
+
+    private var originLongitude: Double? = null
+    private var originLatitude: Double? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_travelling)
@@ -66,6 +74,7 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
     }
     var destinationLatitude: Double? = null
     var destinationLongitude: Double? = null
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun onMapReady(googleMap: GoogleMap) {
         mapView.onResume()
         map = googleMap
@@ -86,6 +95,8 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
         getCurrentLocation()
         destinationLatitude = intent.extras!!.getDouble("latitude")
         destinationLongitude = intent.extras!!.getDouble("longitude")
+        originLongitude = intent.extras!!.getDouble("myLongitude")
+        originLatitude = intent.extras!!.getDouble("myLongitude")
 
         val dest_latLng = LatLng(destinationLatitude!!, destinationLongitude!!)
 
@@ -95,6 +106,7 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
         map.addMarker(destinationMarker)
         getrequestFromFirebase()
         getMyLocation()
+        checkForBookRideRequest()
 //        val url = getUrl(LatLng(origin_lat, origin_lng), dest_latLng, "driving")
         val resultDistance = FloatArray(10)
 
@@ -129,11 +141,12 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
     var myLatlng: LatLng? = null
     var passengerDestLatLng: LatLng? = null
     var showEnTripBtn = false
-
+    var is_notifiy = true
     fun getMyLocation(){
         val rb = dataBase.getReference("drivers")
             .child(currentUserId)
         val locationCallback = object : LocationCallback() {
+            @RequiresApi(Build.VERSION_CODES.N)
             override fun onLocationResult(locationResult: LocationResult) {
                 locationResult ?: return
                 for (location in locationResult.locations){
@@ -148,10 +161,26 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
                         passengerDestlat = passengerData["destLat"]!!.toDouble()
                         passengerDestLng = passengerData["destLng"]!!.toDouble()
                         passengerDestLatLng = LatLng(passengerDestlat!!,passengerDestLng!!)
+                        val passengerOriginLatLng = LatLng(passengerData["originLat"]!!.toDouble(),passengerData["originLng"]!!.toDouble())
                         val remainDistance = SphericalUtil.computeDistanceBetween(passengerDestLatLng,myLatlng)
+                        val remainingPasengerDistance = SphericalUtil.computeDistanceBetween(passengerOriginLatLng,myLatlng)
                         showEnTripBtn = remainDistance < 500.0
                         Log.d("checkingEndRide","reminDistace = $remainDistance, show = $showEnTripBtn")
                         dataBase.getReference("OngoingRide").child(currentUserId).child("remainingDistance").setValue(remainDistance)
+                        dataBase.getReference("OngoingRide").child(currentUserId).child("rideStarted").get().addOnSuccessListener {
+                            Log.d(
+                                "checkingEndRide",
+                                "onDataChange: showing ridedasd is : ${it.value.toString()}"
+                            )
+                            if (!it.value.toString().toBoolean()) {
+                                Log.d("notifiy", "onLocationResult: remaaining distance")
+                                if (remainingPasengerDistance < 500.0 && is_notifiy) {
+                                    Log.d("notifiy", "onLocationResult: sending notification")
+                                    SendNotification(this@Travelling).initializeNotification()
+                                    is_notifiy = false
+                                }
+                            }
+                        }
                         if(showEnTripBtn){
                             dataBase.getReference("OngoingRide").child(currentUserId).child("rideStarted").get().addOnSuccessListener {
                                 Log.d("checkingEndRide", "onDataChange: showing ride is : ${it.value.toString()}")
@@ -166,6 +195,7 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
                                         }
                                     }else{
                                         endTripBtn.visibility = View.GONE
+
                                     }
                                 }
                             }
@@ -230,7 +260,8 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
         val width = LinearLayout.LayoutParams.WRAP_CONTENT
         val height = LinearLayout.LayoutParams.WRAP_CONTENT
         val focusable = true
-        FirebaseDatabase.getInstance().getReference("OngoingRide").child(currentUserId).child("rideEnded").setValue("true")
+        val ongoingRideFirebase = FirebaseDatabase.getInstance().getReference("OngoingRide").child(currentUserId)
+        ongoingRideFirebase.child("rideEnded").setValue("true")
         val view =  mapView.rootView
         val popupWindow = PopupWindow(popupView, width, height, focusable)
         popupWindow.setElevation(20.0f)
@@ -249,9 +280,11 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
                       Log.d("Ratting","current passenger rewards: ${(it["passengerRewards"].toString())}")
                       pCurrentRewards = (it["passengerRewards"].toString()).toDouble()
                       driversRated = (it["driversRated"].toString()).toInt()
-                      docRef.update("passengerRewards",(pCurrentRewards+rating.rating).toString())
                       docRef.update("passengerRatting",((pCurrentRewards+rating.rating)/(driversRated+1)).toString())
                       docRef.update("driversRated",(driversRated+1).toString())
+                      if( passengerData["rideFare"].toString().toDouble() == 0.0){
+                          docRef.update("passengerRewards",(pCurrentRewards+rating.rating + 10).toString())
+                      }
                       Log.d("Ratting","updated passenger rewards: ${pCurrentRewards+rating.rating}")
 
                   }
@@ -467,5 +500,96 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
             ref.removeValue().addOnSuccessListener {
                 Toast.makeText(this, "removed travelling destination", Toast.LENGTH_SHORT).show()
             }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    fun checkForBookRideRequest(){
+        Log.d("bookRides", "checkForBookRideRequest: checking book requests")
+        val allBookRequests = ArrayList<HashMap<String,String>>()
+        FirebaseDatabase.getInstance().reference.child("bookRequests").get().addOnSuccessListener {
+            it.children.forEach {
+                if(it.exists()){
+                    val passenger = it.getValue() as HashMap<String, String>
+                    allBookRequests.add(passenger)
+                }
+            }
+            checkInBookRequests(allBookRequests)
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    fun checkInBookRequests(allBookRequests: ArrayList<HashMap<String, String>>) {
+        Log.d("bookRides", "checkForBookRideRequest: trying to fetch book requests")
+        val currentHrs = Calendar.getInstance().get(Calendar.HOUR)
+        val currentmins = Calendar.getInstance().get(Calendar.MINUTE)
+        allBookRequests.forEach{
+            Log.d("bookRides", "checkForBookRideRequest: fetching passengerData")
+            val myDestLatLng = LatLng(destinationLatitude!!,destinationLongitude!!)
+            val myOriginLatLng = LatLng(originLatitude!!,originLongitude!!)
+            val pOriginLatLng = LatLng(it["passengerOriginLat"].toString().toDouble(),it["passengerOriginLat"].toString().toDouble())
+            val pDestLatLng = LatLng(it["passengerDestLat"].toString().toDouble(),it["passengerDestLng"].toString().toDouble())
+            val disCheck = distanceCheck(pOriginLatLng,pDestLatLng,myOriginLatLng,myDestLatLng)
+            if(disCheck){
+                Log.d("bookRides", "checkForBookRideRequest: passengerData dis = true")
+                val starth = it["startHrs"].toString().toInt()
+                val startm = it["startmins"].toString().toInt()
+                val endh = it["endHrs"].toString().toInt()
+                val endm = it["endmins"].toString().toInt()
+                if(currentHrs in starth..endh){
+                    if (currentmins in startm..endm){
+                        Log.d("bookRides", "checkForBookRideRequest: passenger is ok")
+                        Toast.makeText(this, "there is a match", Toast.LENGTH_SHORT).show()
+                        SendNotification(this).initializeNotification()
+                    }
+                }else{
+                    Log.d("bookRides", "checkForBookRideRequest: passenger is not ok")
+                    Log.d("bookRides", "checkForBookRideRequest: start h : $currentHrs > $starth")
+                    Log.d("bookRides", "checkForBookRideRequest: start m : $currentmins > $startm")
+                    Log.d("bookRides", "checkForBookRideRequest: end h : $endh")
+                    Log.d("bookRides", "checkForBookRideRequest: end m : $endm")
+
+                }
+            }else{
+                Log.d("bookRides", "checkForBookRideRequest: passengerData dis = false")
+            }
+        }
+    }
+
+    private fun distanceCheck(
+        myOriginLatLng: LatLng,
+        myDestLatLng: LatLng,
+        dOriginLatLng: LatLng,
+        dDestLatLng: LatLng
+    ): Boolean {
+        var myDistance = SphericalUtil.computeDistanceBetween(dOriginLatLng,dDestLatLng)
+        var myCenterlatlng = computeCentroid(listOf(dOriginLatLng,dDestLatLng))
+        var a = SphericalUtil.computeDistanceBetween(myCenterlatlng,myOriginLatLng)
+        var b = SphericalUtil.computeDistanceBetween(myCenterlatlng,myDestLatLng)
+        var c = SphericalUtil.computeDistanceBetween(myOriginLatLng,dOriginLatLng)
+        var d = SphericalUtil.computeDistanceBetween(myDestLatLng,dDestLatLng)
+        var result = ((a.toInt() <= myDistance/1.5)
+                && (b.toInt() <= myDistance/1.5))
+                && ((c.toInt() <= myDistance/2)
+                && (d.toInt() <= myDistance/2))
+        Log.d("distance","(${a <= myDistance/1.7}: $a <= ${myDistance/1.5}")
+        Log.d("distance","(${b <= myDistance/1.7} : $b <= ${myDistance/1.5}")
+        Log.d("distance","(${c <= myDistance/2} : $c <= ${myDistance/2}")
+        Log.d("distance","(${d <= myDistance/2} : $d <= ${myDistance/2}")
+        Log.d("distance","myDestination = ${myOriginLatLng.latitude}, driverDestination = ${dOriginLatLng.latitude}")
+        Log.d("distance","myDestination = ${myOriginLatLng.longitude}, driverDestination = ${dOriginLatLng.longitude}")
+        Log.d("distance","myDestination = ${myDestLatLng.latitude}, driverDestination = ${dDestLatLng.latitude}")
+        Log.d("distance","myDestination = ${myDestLatLng.longitude}, driverDestination = ${dDestLatLng.longitude}")
+        return result
+    }
+
+    private fun computeCentroid(points: List<LatLng>): LatLng? {
+        var latitude = 0.0
+        var longitude = 0.0
+        val n = points.size
+        for (point in points) {
+            latitude += point.latitude
+            longitude += point.longitude
+        }
+        return LatLng(latitude / n, longitude / n)
+    }
 }
