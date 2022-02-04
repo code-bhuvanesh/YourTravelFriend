@@ -25,7 +25,7 @@
             android:name=".menuActivities.BookRideActivity"
             android:exported="false" />
         <activity
-            android:name=".menuActivities.myReviewsActivity"
+            android:name=".menuActivities.MyReviewsActivity"
             android:exported="false" />
         <activity
             android:name=".menuActivities.StoreActivity"

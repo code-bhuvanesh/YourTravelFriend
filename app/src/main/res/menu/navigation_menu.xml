@@ -5,24 +5,35 @@
 
     <item
         android:id="@+id/nav_profile"
+        android:icon="@drawable/profile_icon"
         android:title="My Profile" />
     <item
         android:id="@+id/nav_store"
+        android:icon="@drawable/store_icon"
         android:title="Store" />
     <item
         android:id="@+id/nav_reviews"
+        android:icon="@drawable/reviews_icon"
         android:title="Your reviews"/>
     <item
         android:id="@+id/nav_Book"
+        android:icon="@drawable/book_ride_icon"
         android:title="Book ride early"/>
     <item
         android:id="@+id/nav_settings"
+        android:icon="@drawable/settings_icon"
         android:title="settings"/>
     <item
+        android:id="@+id/nav_donate"
+        android:icon="@drawable/donate_icon"
+        android:title="Donate NGO"/>
+    <item
         android:id="@+id/nav_about"
+        android:icon="@drawable/about_icon"
         android:title="About this app"/>
     <item
         android:id="@+id/nav_logout"
+        android:icon="@drawable/logout_icon"
         android:title="Logout" />
 
 </menu>

@@ -7,6 +7,9 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.drawerlayout.widget.DrawerLayout
+import com.example.your_travel_friend.menuActivities.*
+import com.google.android.material.navigation.NavigationBarView
+import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 
 
@@ -34,7 +37,9 @@ class SelectType : AppCompatActivity() {
         actionBarDrawerToggle.syncState();
 
         // to make the Navigation drawer icon always appear on the action bar
-        getSupportActionBar()?.setDisplayHomeAsUpEnabled(true);
+        supportActionBar?.setDisplayHomeAsUpEnabled(true);
+        menuItemsSelected()
+//        actionBar?.setDisplayHomeAsUpEnabled(true)
 
         travelling.setOnClickListener {
             val intent = Intent(this, MapActivity::class.java)
@@ -52,59 +57,69 @@ class SelectType : AppCompatActivity() {
 
 
     }
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.nav_profile -> {
-                openProfile()
-                true
-            }
-            R.id.nav_store-> {
-                openStore()
-                true
-            }
-            R.id.nav_reviews-> {
-                openReviews()
-                true
-            }
-            R.id.nav_settings-> {
-                openSettings()
-                true
-            }
-            R.id.nav_about-> {
-                openAboutPage()
-                true
-            }
-            R.id.nav_logout-> {
-                logout()
-                true
-            }
 
-            else -> super.onOptionsItemSelected(item)
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if(actionBarDrawerToggle.onOptionsItemSelected(item)){
+            return true
         }
+        return super.onOptionsItemSelected(item)
     }
+
+    fun menuItemsSelected(){
+        findViewById<NavigationView>(R.id.nav_view).setNavigationItemSelectedListener {
+            when (it.itemId) {
+                R.id.nav_profile -> {
+                    openProfile()
+                }
+                R.id.nav_store-> {
+                    openStore()
+                }
+                R.id.nav_reviews-> {
+                    openReviews()
+                }
+                R.id.nav_settings-> {
+                    openSettings()
+                }
+                R.id.nav_about-> {
+                    openAboutPage()
+                }
+                R.id.nav_logout-> {
+                    logout()
+                }
+            }
+            true
+        }
+
+    }
+
 
     private fun logout() {
         FirebaseAuth.getInstance().signOut()
     }
 
     private fun openAboutPage() {
-        val aboutIntent = Intent()
+        val aboutIntent = Intent(this,AboutActivity::class.java)
+        startActivity(aboutIntent)
     }
 
     private fun openSettings() {
-        TODO("Not yet implemented")
+        val aboutIntent = Intent(this,SettingsActivity::class.java)
+        startActivity(aboutIntent)
     }
 
     private fun openReviews() {
-        TODO("Not yet implemented")
+        val aboutIntent = Intent(this,MyReviewsActivity::class.java)
+        startActivity(aboutIntent)
     }
 
     private fun openStore() {
-        TODO("Not yet implemented")
+        val aboutIntent = Intent(this,StoreActivity::class.java)
+        startActivity(aboutIntent)
     }
 
     private fun openProfile() {
-        TODO("Not yet implemented")
+        val aboutIntent = Intent(this,MyProfileActivity::class.java)
+        startActivity(aboutIntent)
     }
 
 
