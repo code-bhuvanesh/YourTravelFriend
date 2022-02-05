@@ -176,7 +176,10 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
                                 Log.d("notifiy", "onLocationResult: remaaining distance")
                                 if (remainingPasengerDistance < 500.0 && is_notifiy) {
                                     Log.d("notifiy", "onLocationResult: sending notification")
-                                    SendNotification(this@Travelling).initializeNotification()
+                                    FirebaseFirestore.getInstance().collection("users").document(currentUserId).get().addOnSuccessListener {
+
+                                        SendNotification(this@Travelling).initializeNotification("your rider is near","${it["userName"].toString()} is waiting","driver_waiting")
+                                    }
                                     is_notifiy = false
                                 }
                             }
@@ -539,7 +542,9 @@ class Travelling : AppCompatActivity(), OnMapReadyCallback, TaskLoadedCallback {
                     if (currentmins in startm..endm){
                         Log.d("bookRides", "checkForBookRideRequest: passenger is ok")
                         Toast.makeText(this, "there is a match", Toast.LENGTH_SHORT).show()
-                        SendNotification(this).initializeNotification()
+                        SendNotification(this).initializeNotification("book your ride","you have a driver now","book_your_ride")
+                    }else{
+                        Log.d("bookRides", "checkForBookRideRequest: passenger time is not ok")
                     }
                 }else{
                     Log.d("bookRides", "checkForBookRideRequest: passenger is not ok")

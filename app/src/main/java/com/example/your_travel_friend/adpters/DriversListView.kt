@@ -2,6 +2,8 @@ package com.example.your_travel_friend.adpters
 
 import android.app.Activity
 import android.content.Intent
+import android.location.Address
+import android.location.Geocoder
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -22,9 +24,10 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.maps.android.SphericalUtil
+import java.io.IOException
 import java.util.*
 
-class DriversListView(val context: Activity, val destinationName: String,val userName:String,val myLocation: LatLng ,val myDestination: LatLng,val dOrigin: LatLng,val driversList: MutableList<UserData>): ArrayAdapter<UserData>(context,
+class DriversListView(val context: Activity,val userName:String,val myLocation: LatLng ,val myDestination: LatLng,val dOrigin: LatLng,val driversList: MutableList<UserData>): ArrayAdapter<UserData>(context,
     R.layout.driver_details) {
     lateinit var view: View
     lateinit var requestBtn: TextView
@@ -108,6 +111,9 @@ class DriversListView(val context: Activity, val destinationName: String,val use
         driverName.text = cUser.getUserData()["userName"]
         requestBtn.setOnClickListener {
 
+            val geocoder = Geocoder(context, Locale.getDefault())
+            val addresses = geocoder.getFromLocation(myLocation.latitude, myLocation.longitude, 1)
+            val destName = addresses[0].getAddressLine(0) + ", " + addresses[0].getAddressLine(1)
             requestBtn.text = "requested"
             val ref = db.getReference("requests").child(driverId)
             val passegerDestinationData = hashMapOf<String, String>(
@@ -117,7 +123,7 @@ class DriversListView(val context: Activity, val destinationName: String,val use
                 "originLng" to myLocation.longitude.toString(),
                 "destLat" to myDestination.latitude.toString(),
                 "destLng" to myDestination.longitude.toString(),
-                "destinationName" to destinationName,
+                "destinationName" to destName,
                 "acceptedRide" to "",
                 "rideFare" to totalRideFare
             )
@@ -136,7 +142,7 @@ class DriversListView(val context: Activity, val destinationName: String,val use
 
     var checkActivty = 1
     fun checkForRideAcceptedOrNot(driverUserId: String) {
-        FirebaseMessaging.getInstance().subscribeToTopic("/topics/driver_near_you")
+        FirebaseMessaging.getInstance().subscribeToTopic("/topics/driver_waiting")
         val db = Firebase.database
         val passengerData = hashMapOf<String, String>()
         val childEventListener = object : ValueEventListener {

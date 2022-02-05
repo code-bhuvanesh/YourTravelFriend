@@ -158,6 +158,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
                         travellerIntent.putExtra("destination", destinationName)
                         fusedLocationProviderClient.removeLocationUpdates(locationCallback)
                         startActivity(travellerIntent)
+                        finish()
                     }
                 }
             }
@@ -191,7 +192,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener,
     private fun geoLocate() {
         Log.d("geoLocating" ,"geolocate started")
         val searchString = addressTextView.text.toString()
-            val geocoder = Geocoder(this)
+        val geocoder = Geocoder(this)
         var list = ArrayList<Address>()
         try {
             list = geocoder.getFromLocationName(searchString,1) as ArrayList<Address>

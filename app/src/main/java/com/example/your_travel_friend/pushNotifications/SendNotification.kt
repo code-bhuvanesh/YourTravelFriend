@@ -19,17 +19,21 @@ class SendNotification(val context: Activity) {
     private val contentType = "application/json"
 
 
-    fun initializeNotification(){
+    fun initializeNotification(title: String, message: String, topic: String){
         FirebaseMessaging.getInstance().subscribeToTopic("/topics/Enter_your_topic_name")
 
-        val topic = "/topics/driver_near_you" //topic has to match what the receiver subscribed to
+        val topic =  "/topics/$topic"                        //"/topics/driver_near_you" //topic has to match what the receiver subscribed to
 
         val notification = JSONObject()
         val notifcationBody = JSONObject()
 
         try {
-            notifcationBody.put("title", "Your ride is waiting")
-            notifcationBody.put("message", "your driver is  near you")   //Enter your notification message
+            notifcationBody.put("title", title)
+            notifcationBody.put("message", message)
+            if(topic.equals("book_your_ride")){
+
+                notifcationBody.put("bookRide","true")//Enter your notification message
+            }
             notification.put("to", topic)
             notification.put("data", notifcationBody)
             Log.e("TAG", "try")

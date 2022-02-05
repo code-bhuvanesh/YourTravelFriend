@@ -25,14 +25,12 @@ class Traveller : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_traveller)
         title = "traveller"
+        val currentUserId = FirebaseAuth.getInstance().currentUser!!.uid
         val myLat = intent.extras!!.getDouble("myLatitude")
         val myLng = intent.extras!!.getDouble("myLongitude")
-        val destinationName = intent.extras!!.getString("destination")
-        val currentUserId = FirebaseAuth.getInstance().currentUser!!.uid
+//        val destinationName = intent.extras!!.getString("destination")
         val myDestinationLatitude = intent.extras!!.getDouble("latitude")
         val myDestinationLongitude = intent.extras!!.getDouble("longitude")
-        val myOriginLatitude = intent.extras!!.getDouble("myLatitude")
-        val myOriginLongitude = intent.extras!!.getDouble("myLongitude")
         val driverListView = findViewById<ListView>(R.id.driversListView)
         val user = FirebaseAuth.getInstance()
         val db = FirebaseFirestore.getInstance()
@@ -55,7 +53,7 @@ class Traveller : AppCompatActivity() {
                                         (it.child("originLat").value as String).toDouble()
                                     val dOriginLng =
                                         (it.child("originLng").value as String).toDouble()
-                                    val myOriginLatLng = LatLng(myOriginLatitude, myOriginLongitude)
+                                    val myOriginLatLng = LatLng(myLat, myLng)
                                     val dOriginLatLng = LatLng(dOriginLat, dOriginLng)
                                     val myDestLatLng = LatLng(myDestinationLatitude, myDestinationLongitude)
                                     val dDestLatLng = LatLng(dDestinationLat, dDestinationLng)
@@ -106,7 +104,6 @@ class Traveller : AppCompatActivity() {
 
                                                                         adapter = DriversListView(
                                                                             this,
-                                                                            destinationName!!,
                                                                             currentUserName,
                                                                             LatLng(myLat, myLng),
                                                                             LatLng(

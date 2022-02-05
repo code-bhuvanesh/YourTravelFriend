@@ -72,7 +72,7 @@ class BookRideActivity : AppCompatActivity() {
                     "endmins" to endmins,
                 )
                 db.child(myUserId).setValue(bookRequestMap)
-                FirebaseMessaging.getInstance().subscribeToTopic("/topics/driver_near_you")
+                FirebaseMessaging.getInstance().subscribeToTopic("/topics/book_your_ride")
                 Toast.makeText(this,"your ride is booked",Toast.LENGTH_SHORT).show()
                 finish()
             }
