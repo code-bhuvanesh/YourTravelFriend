@@ -16,6 +16,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.YourTravelFriend">
         <activity
+            android:name=".menuActivities.DonateActivity"
+            android:exported="false" />
+        <activity
             android:name=".menuActivities.AboutActivity"
             android:exported="false" />
         <activity
@@ -71,10 +74,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <service
             android:name=".pushNotifications.PushNotificationService"
-            android:permission="com.google.android.c2dm.permission.SEND"
-            android:exported="false">
+            android:exported="false"
+            android:permission="com.google.android.c2dm.permission.SEND">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />

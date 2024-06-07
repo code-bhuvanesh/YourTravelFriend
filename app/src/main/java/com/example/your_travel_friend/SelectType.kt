@@ -92,6 +92,9 @@ class SelectType : AppCompatActivity() {
                 R.id.nav_logout-> {
                     logout()
                 }
+                R.id.nav_donate ->{
+
+                }
             }
             true
         }
