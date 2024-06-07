@@ -6,7 +6,7 @@ class UserData(private val userId:String, private val userName: String, private 
     private val driverRating = 0.0
     private val passengerRating = 0.0
 
-    fun geUserData(): HashMap<String, String>{
+    fun getUserData(): HashMap<String, String>{
 
         return hashMapOf(
             "userId" to userId,

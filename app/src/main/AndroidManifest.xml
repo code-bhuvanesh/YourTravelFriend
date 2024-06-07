@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.your_travel_friend">
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -9,13 +10,37 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/app_logo"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@drawable/app_logo"
         android:supportsRtl="true"
         android:theme="@style/Theme.YourTravelFriend">
         <activity
-            android:name=".SearchForVehicle"
+            android:name=".menuActivities.DonateActivity"
+            android:exported="false" />
+        <activity
+            android:name=".menuActivities.AboutActivity"
+            android:exported="false" />
+        <activity
+            android:name=".menuActivities.SettingsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".menuActivities.BookRideActivity"
+            android:exported="false" />
+        <activity
+            android:name=".menuActivities.MyReviewsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".menuActivities.StoreActivity"
+            android:exported="false" />
+        <activity
+            android:name=".menuActivities.MyProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".RideAccepted"
+            android:exported="false" />
+        <activity
+            android:name=".PassengerPopCard"
             android:exported="false" />
         <activity
             android:name=".ProfileActivity"
@@ -49,6 +74,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".pushNotifications.PushNotificationService"
+            android:exported="false"
+            android:permission="com.google.android.c2dm.permission.SEND">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

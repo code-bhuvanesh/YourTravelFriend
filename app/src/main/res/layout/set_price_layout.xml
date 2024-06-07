@@ -1,0 +1,93 @@
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardView5"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    app:cardElevation="20dp"
+    android:layout_gravity="center"
+    app:cardCornerRadius="20dp"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="257dp"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="choose the fare to travel"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <LinearLayout
+            android:id="@+id/textContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/header">
+
+            <TextView
+                android:id="@+id/rupeeSymbol"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="₹"
+                android:textSize="30sp"/>
+
+            <TextView
+                android:id="@+id/money_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="17.0"
+                android:textSize="25dp"
+                app:layout_constraintBottom_toBottomOf="@+id/rupeeSymbol"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.149"
+                app:layout_constraintStart_toStartOf="@id/rupeeSymbol"
+                app:layout_constraintTop_toTopOf="@+id/rupeeSymbol" />
+
+            <TextView
+                android:id="@+id/per_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="/Km"
+                android:textSize="25dp"
+                app:layout_constraintBottom_toBottomOf="@+id/money_text"
+                app:layout_constraintStart_toEndOf="@id/money_text"
+                app:layout_constraintTop_toTopOf="@+id/money_text"/>
+        </LinearLayout>
+
+
+        <com.google.android.material.slider.Slider
+            android:id="@+id/fare_slider"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:valueFrom="0"
+            android:valueTo="20"
+            android:value="17"
+            app:labelBehavior="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textContainer" />
+
+        <Button
+            android:id="@+id/ok_btn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="ok"
+            android:background="@color/purple_700"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/fare_slider" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>

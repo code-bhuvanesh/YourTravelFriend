@@ -93,9 +93,9 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/request_button"
+                app:layout_constraintEnd_toEndOf="@+id/rating"
                 app:layout_constraintHorizontal_bias="0.228"
-                app:layout_constraintStart_toEndOf="@+id/arival_time"
+                app:layout_constraintStart_toStartOf="@+id/imageView3"
                 app:layout_constraintTop_toBottomOf="@+id/rating"
                 app:layout_constraintVertical_bias="0.192">
 
@@ -116,7 +116,28 @@
                     android:layout_height="20dp"
                     android:layout_margin="5dp"
                     android:src="@drawable/seat_available" />
+
             </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintEnd_toEndOf="@+id/seats"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="@+id/seats"
+                app:layout_constraintTop_toBottomOf="@+id/seats">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textStyle="bold"
+                    android:text="ride fare:" />
+                <TextView
+                    android:id="@+id/fare_price"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=" ₹80.0 " />
+            </LinearLayout>
+
 
             <ImageView
                 android:id="@+id/vehicle_logo"
